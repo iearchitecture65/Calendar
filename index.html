@@ -216,17 +216,17 @@
 
             <!-- SECTION: CALENDAR (Mobile Order 2 | Desktop Order 1) -->
             <!-- ปรับให้ปฏิทินเล็กลงเหลือ 45% สำหรับในคอม -->
-            <div class="w-full lg:w-[45%] bg-white rounded-[2rem] shadow-sm border border-slate-100 p-4 sm:p-6 order-2 lg:order-1">
-                <div class="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4 px-1 sm:px-2 text-center">
-                    <div class="flex items-center justify-center gap-2 sm:gap-4 w-full">
-                        <button onclick="handlePrevMonth()" class="p-1.5 bg-slate-50 hover:bg-slate-100 text-slate-600 rounded-full transition-colors">
-                            <i data-lucide="chevron-left" class="w-4 h-4"></i>
-                        </button>
-                        <h2 id="calendar-month-year" class="text-base sm:text-lg font-bold text-slate-800 cursor-pointer hover:text-indigo-600 transition-colors" onclick="handleGoToday()" title="กลับไปวันนี้"></h2>
-                        <button onclick="handleNextMonth()" class="p-1.5 bg-slate-50 hover:bg-slate-100 text-slate-600 rounded-full transition-colors">
-                            <i data-lucide="chevron-right" class="w-4 h-4"></i>
-                        </button>
+            <div class="w-full lg:w-[45%] bg-white rounded-[2.5rem] shadow-xl border border-white p-6 order-2 lg:order-1">
+                <div class="flex items-center justify-between mb-6 px-2">
+                    <button onclick="handlePrevMonth()" class="p-2 hover:bg-slate-100 rounded-lg text-indigo-600 transition-colors">
+                        <i data-lucide="chevron-left" class="w-5 h-5"></i>
+                    </button>
+                    <div class="text-center">
+                        <h2 id="calendar-month-year" class="text-base sm:text-lg font-black text-slate-800 cursor-pointer hover:text-indigo-600 transition-colors leading-none" onclick="handleGoToday()" title="กลับไปวันนี้"></h2>
                     </div>
+                    <button onclick="handleNextMonth()" class="p-2 hover:bg-slate-100 rounded-lg text-indigo-600 transition-colors">
+                        <i data-lucide="chevron-right" class="w-5 h-5"></i>
+                    </button>
                 </div>
                 <!-- ปุ่มพรีวิว ย้ายมาอยู่ใต้หัวข้อปฏิทินในโหมดคอมเพื่อให้ดูไม่เบียด -->
                 <div id="admin-export-buttons" class="hidden fade-in mb-4 text-center">
@@ -349,7 +349,7 @@
 
                         <div>
                             <label class="block text-[10px] sm:text-xs font-medium text-slate-500 mb-1">รายละเอียดเพิ่มเติม</label>
-                            <textarea id="ev-desc" rows="2" class="w-full px-2.5 py-1.5 bg-white border border-slate-200 rounded-md text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 resize-none" placeholder="รายละเอียด..."></textarea>
+                            <textarea id="ev-desc" rows="2" oninput="this.style.height = ''; this.style.height = this.scrollHeight + 'px'" class="w-full px-2.5 py-1.5 bg-white border border-slate-200 rounded-md text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 overflow-hidden resize-none" placeholder="รายละเอียด..."></textarea>
                         </div>
                         <div class="flex gap-2">
                             <button type="button" id="cancel-edit-btn" onclick="resetForm()" class="hidden flex-1 py-2 bg-slate-200 hover:bg-slate-300 text-slate-600 rounded-lg text-xs sm:text-sm font-bold transition-all">
@@ -560,6 +560,15 @@
             if (!popupConfig.is_active || String(popupConfig.is_active) === 'false') return;
             if (!siteActive && !isAdmin) return; // ป้องกันการแสดงป๊อปอัปประกาศ ถ้าเว็บปิดปรับปรุง (ยกเว้นแอดมิน)
             
+            // ตรวจสอบเงื่อนไขถ้าดึงกิจกรรมวันนี้ แล้วไม่มีกิจกรรม ให้ยกเลิกการแสดง
+            if (popupConfig.event_id === 'TODAY_EVENTS') {
+                const todayStr = getTodayString();
+                const todayEvs = events.filter(e => isDateInRange(todayStr, e.date, e.endDate));
+                if (todayEvs.length === 0) {
+                    return; // ออกจากการทำงาน ไม่แสดงประกาศ
+                }
+            }
+            
             // นำข้อมูลไปใส่ใน Modal แจ้งเตือน
             document.getElementById('annc-display-title').innerText = popupConfig.title || 'ประกาศจากระบบ';
             document.getElementById('annc-display-msg').innerText = popupConfig.message || '';
@@ -572,22 +581,17 @@
                 const todayEvs = events.filter(e => isDateInRange(todayStr, e.date, e.endDate)).sort((a,b) => a.time.localeCompare(b.time));
                 
                 eventSnippet.classList.remove('hidden');
-                if (todayEvs.length > 0) {
-                    eventCardContainer.className = ""; // เคลียร์คลาสเก่าที่อาจค้าง
-                    eventCardContainer.innerHTML = todayEvs.map(linkedEv => `
-                        <div onclick="closeAnnouncement(); openEventView('${linkedEv.id}');" class="bg-white border border-slate-200 rounded-xl p-3 shadow-sm cursor-pointer hover:border-indigo-300 transition-all mb-2 last:mb-0">
-                            <div class="flex flex-col">
-                                <div class="flex justify-between items-start mb-1">
-                                    <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-slate-100 text-slate-600 shadow-sm whitespace-nowrap">${linkedEv.time} น.</span>
-                                </div>
-                                <h5 class="font-bold text-sm text-slate-800 leading-tight mt-1 line-clamp-2">${escapeHTML(linkedEv.title)}</h5>
+                eventCardContainer.className = ""; // เคลียร์คลาสเก่าที่อาจค้าง
+                eventCardContainer.innerHTML = todayEvs.map(linkedEv => `
+                    <div onclick="closeAnnouncement(); openEventView('${linkedEv.id}');" class="bg-white border border-slate-200 rounded-xl p-3 shadow-sm cursor-pointer hover:border-indigo-300 transition-all mb-2 last:mb-0">
+                        <div class="flex flex-col">
+                            <div class="flex justify-between items-start mb-1">
+                                <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-slate-100 text-slate-600 shadow-sm whitespace-nowrap">${linkedEv.time} น.</span>
                             </div>
+                            <h5 class="font-bold text-sm text-slate-800 leading-tight mt-1 line-clamp-2">${escapeHTML(linkedEv.title)}</h5>
                         </div>
-                    `).join('');
-                } else {
-                    eventCardContainer.className = "";
-                    eventCardContainer.innerHTML = `<div class="text-[11px] text-slate-500 text-center py-3 bg-slate-50 rounded-xl border border-slate-200 border-dashed">ไม่มีกิจกรรมในวันนี้</div>`;
-                }
+                    </div>
+                `).join('');
 
             } else if (popupConfig.event_id) {
                 const linkedEv = events.find(e => e.id === popupConfig.event_id);
@@ -754,22 +758,39 @@
             const monthYearDisplay = document.getElementById('calendar-month-year');
             if(monthYearDisplay) monthYearDisplay.innerText = `${thaiMonths[month]} ${year + 543}`;
             
-            const headerHtml = thaiDays.map(d => `<div class="py-1 text-center text-[10px] sm:text-xs font-bold text-slate-400">${d}</div>`).join('');
+            const headerHtml = thaiDays.map(d => `<div class="py-2 text-center text-[10px] sm:text-xs font-black text-slate-400 uppercase">${d}</div>`).join('');
             const headerContainer = document.getElementById('calendar-days-header');
             if(headerContainer) headerContainer.innerHTML = headerHtml;
 
             let grid = '';
-            for (let i = 0; i < start; i++) grid += `<div></div>`;
+            for (let i = 0; i < start; i++) grid += `<div class="aspect-square"></div>`;
             for (let d = 1; d <= dim; d++) {
                 const dayStr = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
                 const isToday = dayStr === todayStr;
+                const isSelected = dayStr === selectedDate;
+                const isPast = dayStr < todayStr;
+                
                 const dayEvs = events.filter(e => isDateInRange(dayStr, e.date, e.endDate));
                 let dots = '';
                 if(dayEvs.length) {
                     dots = `<div class="absolute bottom-1.5 flex gap-0.5">${dayEvs.slice(0,3).map(e => `<span class="w-1 h-1 sm:w-1.5 sm:h-1.5 rounded-full ${getDotColor(e.color)}"></span>`).join('')}</div>`;
                 }
-                const cls = isToday ? 'border-indigo-500 bg-indigo-50 text-indigo-700 shadow-sm' : 'border-transparent hover:border-slate-100 hover:bg-slate-50 text-slate-700';
-                grid += `<button onclick="openDayDetails('${dayStr}')" class="relative aspect-square flex flex-col items-center justify-center rounded-full transition-all border-2 ${cls}"><span class="text-xs sm:text-sm font-medium">${d}</span>${dots}</button>`;
+                
+                let borderClass = 'border-slate-50 text-slate-700 bg-white';
+                if (isToday) borderClass = 'border-indigo-500 text-indigo-700 bg-indigo-50';
+
+                const ringClass = isSelected ? 'ring-4 ring-indigo-200 z-10' : '';
+                const opacityClass = isPast && !isToday ? 'opacity-50 grayscale-[0.5]' : '';
+
+                grid += `
+                    <button onclick="openDayDetails('${dayStr}')" 
+                            class="relative aspect-square flex flex-col items-center justify-center rounded-xl transition-all border-2 
+                            ${ringClass} ${borderClass} hover:border-indigo-400 active:scale-90 shadow-sm
+                            ${opacityClass}">
+                        <span class="text-xs sm:text-sm font-bold">${d}</span>
+                        ${dots}
+                    </button>
+                `;
             }
             const gridContainer = document.getElementById('calendar-grid');
             if(gridContainer) gridContainer.innerHTML = grid;
@@ -1053,7 +1074,15 @@
             document.getElementById('ev-time').value = e.time;
             document.getElementById('ev-enddate').value = e.endDate || '';
             document.getElementById('ev-color').value = e.color || 'blue';
+            
             document.getElementById('ev-desc').value = e.description || '';
+            setTimeout(() => {
+                const descEl = document.getElementById('ev-desc');
+                if (descEl) {
+                    descEl.style.height = 'auto';
+                    descEl.style.height = descEl.scrollHeight + 'px';
+                }
+            }, 10);
             
             const container = document.getElementById('links-form-container');
             if(container) {
@@ -1085,6 +1114,9 @@
             document.getElementById('ev-id').value = '';
             const linksContainer = document.getElementById('links-form-container');
             if(linksContainer) linksContainer.innerHTML = '';
+            
+            const descEl = document.getElementById('ev-desc');
+            if(descEl) descEl.style.height = 'auto';
             
             const formTitle = document.getElementById('admin-form-title');
             if(formTitle) formTitle.innerHTML = '<i data-lucide="plus" class="w-4 h-4 text-indigo-500"></i> เพิ่มนัดหมายใหม่';
@@ -1188,28 +1220,60 @@
                 </div>`;
             };
 
-            const renderEventHtml = (e) => `
+            const renderEventHtml = (e) => {
+                let desc = e.description || '';
+                let isTruncated = false;
+                
+                // ตัดคำให้อยู่ใน 2 บรรทัด หรือความยาวไม่เกิน 150 ตัวอักษร
+                const lines = desc.split('\n');
+                if (lines.length > 2) {
+                    desc = lines.slice(0, 2).join('\n');
+                    isTruncated = true;
+                }
+                if (desc.length > 150) {
+                    desc = desc.substring(0, 150);
+                    isTruncated = true;
+                }
+
+                return `
                 <div style="margin-bottom: 15px; border-left: 5px solid ${exportColors[e.color].bg}; padding-left: 15px; page-break-inside: avoid; width: 100%; box-sizing: border-box;">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
                         <div style="font-size: 14px; color: #64748b; font-weight: bold;">${e.date.split('-').reverse().join('/')}</div>
                         <div style="font-size: 14px; color: #475569; font-weight: bold; background-color: #f1f5f9; padding: 2px 8px; border-radius: 6px;">${e.time} น.</div>
                     </div>
                     <div style="font-weight: 800; font-size: 18px; color: #1e293b; margin-bottom: ${e.description ? '8px' : '4px'}; word-break: break-word;">${escapeHTML(e.title)}</div>
-                    ${e.description ? `<div style="font-size: 13px; color: #475569; line-height: 1.5; white-space: pre-wrap; background-color: #f8fafc; border: 1px solid #f1f5f9; border-radius: 8px; padding: 10px 14px; width: 100%; box-sizing: border-box; word-break: break-word;">${escapeHTML(e.description)}</div>` : ''}
+                    ${e.description ? `<div style="font-size: 13px; color: #475569; line-height: 1.5; white-space: pre-wrap; background-color: #f8fafc; border: 1px solid #f1f5f9; border-radius: 8px; padding: 10px 14px; width: 100%; box-sizing: border-box; word-break: break-word;">${escapeHTML(desc)}${isTruncated ? `... <span style="color: ${exportColors[e.color].bg}; font-weight: bold;">(ดูข้อมูลเพิ่มเติมผ่านลิ้งก์เว็บไซต์)</span>` : ''}</div>` : ''}
                 </div>
-            `;
+                `;
+            };
 
             let grid = '';
-            for (let i = 0; i < start; i++) grid += '<div></div>';
+            for (let i = 0; i < start; i++) grid += `<div></div>`;
             for (let d = 1; d <= dim; d++) {
-                const ds = `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-                const evs = events.filter(e => isDateInRange(ds, e.date, e.endDate));
-                let bg = '', txt = 'color: #9ca3af;';
-                if(evs.length) {
-                    bg = `background-color: ${exportColors[evs[0].color].bg}; border-radius: 999px; width: 38px; height: 38px; display: flex; align-items: center; justify-content: center;`;
-                    txt = 'color: white; font-weight: 800;';
+                const dayStr = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+                const isToday = dayStr === todayStr;
+                const isSelected = dayStr === selectedDate;
+                const isPast = dayStr < todayStr;
+                
+                const dayEvs = events.filter(e => isDateInRange(dayStr, e.date, e.endDate));
+                let dots = '';
+                if(dayEvs.length) {
+                    dots = `<div class="absolute bottom-1.5 flex gap-0.5">${dayEvs.slice(0,3).map(e => `<span class="w-1 h-1 sm:w-1.5 sm:h-1.5 rounded-full ${getDotColor(e.color)}"></span>`).join('')}</div>`;
                 }
-                grid += `<div style="display: flex; justify-content: center; align-items: center; height: 48px;"><div style="${bg}"><span style="${txt} font-size: 18px;">${d}</span></div></div>`;
+                
+                let borderClass = 'border-slate-50 text-slate-700 bg-white';
+                if (isToday) borderClass = 'border-indigo-500 text-indigo-700 bg-indigo-50';
+
+                const ringClass = isSelected ? 'ring-4 ring-indigo-200 z-10' : '';
+                const opacityClass = isPast && !isToday ? 'opacity-50 grayscale-[0.5]' : '';
+
+                grid += `
+                    <div class="relative aspect-square flex flex-col items-center justify-center rounded-xl border-2 
+                            ${ringClass} ${borderClass} shadow-sm ${opacityClass}">
+                        <span class="text-xs sm:text-sm font-bold">${d}</span>
+                        ${dots}
+                    </div>
+                `;
             }
 
             // --- ระบบคำนวณแบ่งหน้าอัตโนมัติ ตามความสูงของตัวอักษรจริงเพื่อป้องกันการตัดตก ---
@@ -1337,6 +1401,7 @@
             const ed = document.getElementById('ev-enddate');
             if(ed) ed.min = ds;
             renderModalDetails(); 
+            renderCalendar();
             document.getElementById('details-modal').classList.remove('hidden'); 
             document.getElementById('details-modal').classList.add('flex'); 
             updateScrollLock();
