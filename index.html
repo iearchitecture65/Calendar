@@ -103,6 +103,7 @@
         <div class="flex flex-col lg:flex-row gap-6 items-start">
             
             <!-- SECTION: DASHBOARDS (Mobile Order 1 | Desktop Order 2) -->
+            <!-- ปรับสัดส่วน Desktop ให้ใหญ่ขึ้น (lg:w-[55%]) เพื่อให้ปฏิทินเล็กลง -->
             <div class="w-full lg:w-[55%] space-y-4 order-1 lg:order-2 shrink-0">
                 <!-- Today's Events -->
                 <div class="bg-white rounded-[1.5rem] shadow-sm border border-slate-100 p-4 sm:p-5 flex flex-col max-h-[220px] lg:max-h-none overflow-hidden text-sm">
@@ -128,26 +129,27 @@
             </div>
 
             <!-- SECTION: CALENDAR (Mobile Order 2 | Desktop Order 1) -->
+            <!-- ปรับให้ปฏิทินเล็กลงเหลือ 45% สำหรับในคอม -->
             <div class="w-full lg:w-[45%] bg-white rounded-[2rem] shadow-sm border border-slate-100 p-4 sm:p-6 order-2 lg:order-1">
-                <div class="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4 px-1 sm:px-2">
-                    <div class="flex items-center gap-2 sm:gap-4">
-                        <button onclick="handlePrevMonth()" class="p-2 bg-slate-50 hover:bg-slate-100 text-slate-600 rounded-full transition-colors">
-                            <i data-lucide="chevron-left" class="w-5 h-5"></i>
+                <div class="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4 px-1 sm:px-2 text-center">
+                    <div class="flex items-center justify-center gap-2 sm:gap-4 w-full">
+                        <button onclick="handlePrevMonth()" class="p-1.5 bg-slate-50 hover:bg-slate-100 text-slate-600 rounded-full transition-colors">
+                            <i data-lucide="chevron-left" class="w-4 h-4"></i>
                         </button>
-                        <h2 id="calendar-month-year" class="text-lg sm:text-xl font-bold text-slate-800 cursor-pointer hover:text-indigo-600 transition-colors" onclick="handleGoToday()" title="กลับไปวันนี้"></h2>
-                        <button onclick="handleNextMonth()" class="p-2 bg-slate-50 hover:bg-slate-100 text-slate-600 rounded-full transition-colors">
-                            <i data-lucide="chevron-right" class="w-5 h-5"></i>
-                        </button>
-                    </div>
-
-                    <div id="admin-export-buttons" class="hidden fade-in">
-                        <button onclick="openPreviewModal()" class="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white hover:bg-indigo-700 rounded-xl text-sm font-semibold transition-colors shadow-sm">
-                            <i data-lucide="printer" class="w-4 h-4"></i> พรีวิว & ส่งออก
+                        <h2 id="calendar-month-year" class="text-base sm:text-lg font-bold text-slate-800 cursor-pointer hover:text-indigo-600 transition-colors" onclick="handleGoToday()" title="กลับไปวันนี้"></h2>
+                        <button onclick="handleNextMonth()" class="p-1.5 bg-slate-50 hover:bg-slate-100 text-slate-600 rounded-full transition-colors">
+                            <i data-lucide="chevron-right" class="w-4 h-4"></i>
                         </button>
                     </div>
                 </div>
-                <div class="grid grid-cols-7 gap-1 sm:gap-2 mb-2" id="calendar-days-header"></div>
-                <div class="grid grid-cols-7 gap-1 sm:gap-2" id="calendar-grid"></div>
+                <!-- ปุ่มพรีวิว ย้ายมาอยู่ใต้หัวข้อปฏิทินในโหมดคอมเพื่อให้ดูไม่เบียด -->
+                <div id="admin-export-buttons" class="hidden fade-in mb-4 text-center">
+                    <button onclick="openPreviewModal()" class="inline-flex items-center gap-2 px-4 py-1.5 bg-indigo-600 text-white hover:bg-indigo-700 rounded-xl text-[11px] font-semibold transition-colors shadow-sm w-full justify-center">
+                        <i data-lucide="printer" class="w-3.5 h-3.5"></i> พรีวิว & ส่งออก
+                    </button>
+                </div>
+                <div class="grid grid-cols-7 gap-1 mb-2" id="calendar-days-header"></div>
+                <div class="grid grid-cols-7 gap-1" id="calendar-grid"></div>
             </div>
         </div>
 
@@ -320,7 +322,7 @@
         </div>
     </div>
 
-    <!-- Admin Auth Modal -->
+    <!-- Admin Auth Modal (Z-Index: 110) -->
     <div id="auth-modal" class="fixed inset-0 z-[110] items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm hidden">
         <div class="bg-white rounded-2xl shadow-xl w-full max-w-xs p-6 fade-in text-center">
             <div class="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -347,12 +349,12 @@
                 </h3>
                 <button onclick="closePreviewModal()" class="p-2 text-slate-400 hover:bg-slate-100 rounded-full transition-colors"><i data-lucide="x"></i></button>
             </div>
-            <div class="flex-1 overflow-auto bg-[#e2e8f0] p-4 sm:p-8 flex justify-center items-start">
-                <img id="generated-preview-image" src="" alt="Preview" class="max-w-full h-auto rounded-xl shadow-lg border border-slate-200">
+            <div id="preview-images-container" class="flex-1 overflow-auto bg-[#e2e8f0] p-4 sm:p-8 flex flex-col items-center gap-6">
+                <!-- รูปภาพจะถูกเพิ่มเข้ามาที่นี่โดย JS -->
             </div>
             <div class="p-4 sm:px-6 border-t border-slate-100 bg-slate-50 flex flex-wrap justify-end gap-3 shrink-0">
                 <button onclick="closePreviewModal()" class="px-5 py-2.5 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 rounded-xl text-sm font-semibold shadow-sm transition-colors">กลับไปแก้ไข</button>
-                <button onclick="downloadFromPreview('image')" class="flex items-center gap-2 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-sm font-semibold shadow-sm transition-all"><i data-lucide="download" class="w-4 h-4"></i> ดาวน์โหลดรูป</button>
+                <button onclick="downloadFromPreview('image')" class="flex items-center gap-2 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-sm font-semibold shadow-sm transition-all"><i data-lucide="download" class="w-4 h-4"></i> ดาวน์โหลดรูปทั้งหมด</button>
                 <button onclick="downloadFromPreview('pdf')" class="flex items-center gap-2 px-5 py-2.5 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-sm font-semibold shadow-sm transition-all"><i data-lucide="file-pdf" class="w-4 h-4"></i> ดาวน์โหลด PDF</button>
             </div>
         </div>
@@ -398,6 +400,26 @@
             purple: { bg: '#a78bfa', text: '#ede9fe' }   
         };
 
+        // --- Global Functions for HTML exposure ---
+        window.toggleAdminModal = toggleAdminModal;
+        window.handlePrevMonth = handlePrevMonth;
+        window.handleNextMonth = handleNextMonth;
+        window.handleGoToday = handleGoToday;
+        window.openPreviewModal = openPreviewModal;
+        window.openDayDetails = openDayDetails;
+        window.closeDetailsModal = closeDetailsModal;
+        window.handleToggleSiteStatus = handleToggleSiteStatus;
+        window.renderAdminHistory = renderAdminHistory;
+        window.addLinkFormRow = addLinkFormRow;
+        window.handleEditEvent = handleEditEvent;
+        window.resetForm = resetForm;
+        window.downloadFromPreview = downloadFromPreview;
+        window.closeAuthModal = closeAuthModal;
+        window.closePreviewModal = closePreviewModal;
+        window.handleDeleteEvent = handleDeleteEvent;
+        window.openEventView = openEventView;
+        window.closeEventView = closeEventView;
+
         const getTodayString = () => {
             const d = new Date();
             return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
@@ -436,8 +458,7 @@
             }
         };
 
-        // UI Renders
-        const renderDashboard = () => {
+        function renderDashboard() {
             const todayStr = getTodayString();
             const todayEvents = events.filter(e => isDateInRange(todayStr, e.date, e.endDate)).sort((a,b) => a.time.localeCompare(b.time));
             const upcomingEvents = events.filter(e => e.date > todayStr).sort((a,b) => a.date.localeCompare(b.date) || a.time.localeCompare(b.time));
@@ -470,16 +491,19 @@
             if (containerToday) containerToday.innerHTML = todayEvents.length ? todayEvents.map(e => eventToHtml(e)).join('') : `<div class="text-center py-4 bg-slate-50/50 border border-dashed border-slate-200 rounded-xl text-slate-400 text-[10px]">ไม่มีกิจกรรมวันนี้</div>`;
             if (containerUpcoming) containerUpcoming.innerHTML = upcomingEvents.length ? upcomingEvents.map(e => eventToHtml(e, true)).join('') : `<div class="text-center py-4 text-slate-400 text-[10px]">ไม่มีกิจกรรมล่วงหน้า</div>`;
             if(window.lucide) window.lucide.createIcons();
-        };
+        }
 
-        const renderCalendar = () => {
+        function renderCalendar() {
             const year = currentDate.getFullYear(), month = currentDate.getMonth();
             const dim = new Date(year, month + 1, 0).getDate(), start = new Date(year, month, 1).getDay();
             const todayStr = getTodayString();
 
-            document.getElementById('calendar-month-year').innerText = `${thaiMonths[month]} ${year + 543}`;
+            const monthYearDisplay = document.getElementById('calendar-month-year');
+            if(monthYearDisplay) monthYearDisplay.innerText = `${thaiMonths[month]} ${year + 543}`;
+            
             const headerHtml = thaiDays.map(d => `<div class="py-1 text-center text-[10px] sm:text-xs font-bold text-slate-400">${d}</div>`).join('');
-            document.getElementById('calendar-days-header').innerHTML = headerHtml;
+            const headerContainer = document.getElementById('calendar-days-header');
+            if(headerContainer) headerContainer.innerHTML = headerHtml;
 
             let grid = '';
             for (let i = 0; i < start; i++) grid += `<div></div>`;
@@ -494,11 +518,12 @@
                 const cls = isToday ? 'border-indigo-500 bg-indigo-50 text-indigo-700 shadow-sm' : 'border-transparent hover:border-slate-100 hover:bg-slate-50 text-slate-700';
                 grid += `<button onclick="openDayDetails('${dayStr}')" class="relative aspect-square flex flex-col items-center justify-center rounded-full transition-all border-2 ${cls}"><span class="text-xs sm:text-sm font-medium">${d}</span>${dots}</button>`;
             }
-            document.getElementById('calendar-grid').innerHTML = grid;
+            const gridContainer = document.getElementById('calendar-grid');
+            if(gridContainer) gridContainer.innerHTML = grid;
             if(window.lucide) window.lucide.createIcons();
-        };
+        }
 
-        const renderModalDetails = () => {
+        function renderModalDetails() {
             if (!selectedDate) return;
             document.getElementById('modal-date-title').innerText = formatThaiDate(selectedDate);
             const selEvs = events.filter(e => isDateInRange(selectedDate, e.date, e.endDate)).sort((a,b) => a.time.localeCompare(b.time));
@@ -537,9 +562,9 @@
                 }).join('');
             }
             if(window.lucide) window.lucide.createIcons();
-        };
+        }
 
-        const renderAdminHistory = () => {
+        function renderAdminHistory() {
             if (!isAdmin) return;
             const q = (document.getElementById('history-search')?.value || '').toLowerCase();
             const filtered = events.filter(e => e.title.toLowerCase().includes(q) || (e.description||'').toLowerCase().includes(q))
@@ -562,9 +587,8 @@
                 `).join('');
             }
             if(window.lucide) window.lucide.createIcons();
-        };
+        }
 
-        // Scroll Lock Logic
         function updateScrollLock() {
             const modals = ['details-modal', 'event-view-modal', 'auth-modal', 'preview-modal'];
             const isAnyOpen = modals.some(id => {
@@ -579,7 +603,6 @@
             }
         }
 
-        // Site Status Toggle UI
         function updateSiteStatusUI() {
             const btn = document.getElementById('site-status-toggle');
             const warn = document.getElementById('site-offline-warning');
@@ -609,8 +632,22 @@
             }
         }
 
-        // Event View Logic
-        window.openEventView = (eventId) => {
+        function toggleAdminModal() {
+            if (isAdmin) { 
+                isAdmin = false; 
+                updateAdminUI(); 
+            } else { 
+                const passInput = document.getElementById('auth-password');
+                if(passInput) passInput.value = '';
+                const authErr = document.getElementById('auth-error');
+                if(authErr) authErr.classList.add('hidden');
+                document.getElementById('auth-modal').classList.remove('hidden');
+                document.getElementById('auth-modal').classList.add('flex');
+                updateScrollLock();
+            }
+        }
+
+        function openEventView(eventId) {
             const e = events.find(item => item.id === eventId);
             if (!e) return;
 
@@ -628,7 +665,7 @@
             }
 
             const colorDot = document.getElementById('view-ev-color-dot');
-            colorDot.className = `w-3 h-3 rounded-full ${getDotColor(e.color)}`;
+            if(colorDot) colorDot.className = `w-3 h-3 rounded-full ${getDotColor(e.color)}`;
 
             const linksContainer = document.getElementById('view-ev-links-container');
             const linksSection = document.getElementById('view-ev-links-section');
@@ -650,30 +687,30 @@
             document.getElementById('event-view-modal').classList.add('flex');
             if(window.lucide) window.lucide.createIcons();
             updateScrollLock();
-        };
+        }
 
-        window.closeEventView = () => {
+        function closeEventView() {
             document.getElementById('event-view-modal').classList.add('hidden');
             document.getElementById('event-view-modal').classList.remove('flex');
             updateScrollLock();
-        };
+        }
 
-        // Admin Helpers
-        window.addLinkFormRow = (data = { label: '', url: '', order: '' }) => {
+        function addLinkFormRow(data = { label: '', url: '', order: '' }) {
             const container = document.getElementById('links-form-container');
+            if(!container) return;
             const row = document.createElement('div');
             row.className = "link-form-row grid grid-cols-12 gap-2 bg-white p-2 rounded-lg border border-slate-100 shadow-sm mb-2 fade-in";
             row.innerHTML = `
                 <div class="col-span-4"><input type="text" placeholder="ชื่อปุ่ม" value="${data.label}" class="link-label w-full px-2 py-1 text-[10px] border border-slate-100 rounded bg-slate-50 focus:bg-white outline-none"></div>
                 <div class="col-span-5"><input type="url" placeholder="URL..." value="${data.url}" class="link-url w-full px-2 py-1 text-[10px] border border-slate-100 rounded bg-slate-50 focus:bg-white outline-none"></div>
                 <div class="col-span-2"><input type="number" placeholder="ที่" value="${data.order}" class="link-order w-full px-1 py-1 text-[10px] border border-slate-100 rounded bg-slate-50 text-center outline-none"></div>
-                <div class="col-span-1 flex items-center justify-center"><button type="button" onclick="this.parentElement.parentElement.remove()" class="text-red-400 hover:text-red-600 transition-colors"><i data-lucide="minus-circle" class="w-4 h-4"></i></button></div>
+                <div class="col-span-1 flex items-center justify-center"><button type="button" onclick="this.parentElement.parentElement.remove(); updateScrollLock();" class="text-red-400 hover:text-red-600 transition-colors"><i data-lucide="minus-circle" class="w-4 h-4"></i></button></div>
             `;
             container.appendChild(row);
             if(window.lucide) window.lucide.createIcons();
-        };
+        }
 
-        window.handleEditEvent = (id) => {
+        function handleEditEvent(id) {
             const e = events.find(item => item.id === id);
             if (!e) return;
             selectedDate = e.date;
@@ -685,8 +722,10 @@
             document.getElementById('ev-desc').value = e.description || '';
             
             const container = document.getElementById('links-form-container');
-            container.innerHTML = '';
-            (e.links || []).forEach(l => addLinkFormRow(l));
+            if(container) {
+                container.innerHTML = '';
+                (e.links || []).forEach(l => addLinkFormRow(l));
+            }
 
             const formTitle = document.getElementById('admin-form-title');
             if(formTitle) formTitle.innerHTML = '<i data-lucide="edit-3" class="w-4 h-4 text-indigo-500"></i> แก้ไขข้อมูลนัดหมาย';
@@ -703,13 +742,14 @@
                 openDayDetails(e.date);
             }
             if(window.lucide) window.lucide.createIcons();
-        };
+        }
 
-        window.resetForm = () => {
+        function resetForm() {
             const form = document.getElementById('add-event-form');
             if(form) form.reset();
             document.getElementById('ev-id').value = '';
-            document.getElementById('links-form-container').innerHTML = '';
+            const linksContainer = document.getElementById('links-form-container');
+            if(linksContainer) linksContainer.innerHTML = '';
             
             const formTitle = document.getElementById('admin-form-title');
             if(formTitle) formTitle.innerHTML = '<i data-lucide="plus" class="w-4 h-4 text-indigo-500"></i> เพิ่มนัดหมายใหม่';
@@ -720,24 +760,31 @@
             
             document.getElementById('cancel-edit-btn').classList.add('hidden');
             if(window.lucide) window.lucide.createIcons();
-        };
+        }
 
-        const updateAdminUI = () => {
+        function updateAdminUI() {
             const btn = document.getElementById('admin-toggle-btn'), icon = document.getElementById('admin-lock-icon');
             const form = document.getElementById('admin-form-container'), exp = document.getElementById('admin-export-buttons');
             const hist = document.getElementById('admin-history-section'), ctrl = document.getElementById('site-control-panel');
             const warn = document.getElementById('site-offline-warning');
             
             if (isAdmin) {
-                btn.className = "p-2 rounded-full bg-indigo-600 text-white shadow-md z-10 transition-all";
-                icon.setAttribute('data-lucide', 'unlock');
-                form.classList.remove('hidden'); exp.classList.remove('hidden'); hist.classList.remove('hidden'); ctrl.classList.remove('hidden');
-                if(!siteActive) warn.classList.remove('hidden');
+                if(btn) btn.className = "p-2 rounded-full bg-indigo-600 text-white shadow-md z-10 transition-all";
+                if(icon) icon.setAttribute('data-lucide', 'unlock');
+                if(form) form.classList.remove('hidden'); 
+                if(exp) exp.classList.remove('hidden'); 
+                if(hist) hist.classList.remove('hidden'); 
+                if(ctrl) ctrl.classList.remove('hidden');
+                if(!siteActive && warn) warn.classList.remove('hidden');
                 renderAdminHistory();
             } else {
-                btn.className = "p-2 rounded-full text-slate-300 hover:text-slate-500 hover:bg-white z-10 transition-all";
-                icon.setAttribute('data-lucide', 'lock');
-                form.classList.add('hidden'); exp.classList.add('hidden'); hist.classList.add('hidden'); ctrl.classList.add('hidden'); warn.classList.add('hidden');
+                if(btn) btn.className = "p-2 rounded-full text-slate-300 hover:text-slate-500 hover:bg-white z-10 transition-all";
+                if(icon) icon.setAttribute('data-lucide', 'lock');
+                if(form) form.classList.add('hidden'); 
+                if(exp) exp.classList.add('hidden'); 
+                if(hist) hist.classList.add('hidden'); 
+                if(ctrl) ctrl.classList.add('hidden'); 
+                if(warn) warn.classList.add('hidden');
                 resetForm();
             }
             if(window.lucide) window.lucide.createIcons();
@@ -745,49 +792,55 @@
             updateSiteStatusUI();
             checkSiteVisibility();
             updateScrollLock();
-        };
+        }
 
-        window.handleToggleSiteStatus = async () => {
+        async function handleToggleSiteStatus() {
             if(!isAdmin) return;
             const newStatus = !siteActive;
             try {
                 await setDoc(doc(db, 'settings', 'site_config'), { is_active: newStatus });
             } catch (e) { console.error(e); }
-        };
+        }
 
-        // Export Logic
-        window.openPreviewModal = async () => {
-            const loading = document.getElementById('loading');
-            document.getElementById('loading-text').innerText = "กำลังสร้างภาพพรีวิว...";
-            loading.classList.remove('hidden');
-            try {
-                await document.fonts.ready;
-                const renderer = document.getElementById('offscreenRenderer');
-                renderer.innerHTML = generateExportHTML();
-                const wrap = document.getElementById('capture-layout-wrapper');
-                void wrap.offsetWidth; 
-                await new Promise(r => setTimeout(r, 1200));
-                
-                const dataUrl = await htmlToImage.toPng(wrap, {
-                    quality: 1, pixelRatio: 3, cacheBust: true, useCORS: true,
-                    filter: (node) => {
-                        if (node.tagName === 'LINK' || node.tagName === 'STYLE') {
-                            try { if (node.sheet && node.sheet.cssRules) return true; } catch (e) { return false; }
-                        }
-                        return true;
-                    }
-                });
-                window.cachedExportDataURL = dataUrl;
-                document.getElementById('generated-preview-image').src = dataUrl;
-                document.getElementById('preview-modal').classList.remove('hidden');
-                document.getElementById('preview-modal').classList.add('flex');
-                updateScrollLock();
-            } catch (e) { alert("ล้มเหลว: " + e.message); } finally { loading.classList.add('hidden'); }
-        };
-
-        const generateExportHTML = () => {
+        const generateExportPagesHTML = () => {
             const y = currentDate.getFullYear(), m = currentDate.getMonth();
             const dim = new Date(y, m+1, 0).getDate(), start = new Date(y, m, 1).getDay();
+            const allActiveEvs = events.filter(e => e.date.startsWith(`${y}-${String(m+1).padStart(2,'0')}`)).sort((a,b) => a.date.localeCompare(b.date));
+            const pages = [];
+            const itemsPerPageP1 = 5;
+            const itemsPerPageNext = 10;
+            
+            const renderBasePage = (contentHtml, pageNum, totalPages) => {
+                return `
+                <div id="capture-layout-wrapper-${pageNum}" style="width: 1123px; height: 794px; background-color: #f8fafc; padding: 40px; font-family: 'Kanit', sans-serif; display: flex; flex-direction: column; box-sizing: border-box;">
+                    <style>@import url('https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700;800;900&display=swap'); * { font-family: 'Kanit', sans-serif !important; }</style>
+                    <div style="display: flex; flex-direction: column; align-items: center; margin-bottom: 25px;">
+                        <div class="preview-title-capsule" style="background-color: #4b5563; color: white; border-radius: 999px; padding: 12px 70px; margin-bottom: 10px;">
+                            <span style="font-size: 40px; font-weight: 800; line-height: 1;">ตารางนัดหมาย</span>
+                        </div>
+                        <span style="font-size: 22px; font-weight: 600; color: #4b5563;">เดือน${thaiMonths[m]} ${y + 543} ${totalPages > 1 ? `(หน้า ${pageNum}/${totalPages})` : ''}</span>
+                    </div>
+                    <div style="flex: 1; display: flex; flex-direction: column; overflow: hidden;">
+                        ${contentHtml}
+                    </div>
+                    <div style="text-align: center; color: #cbd5e1; font-size: 10px; font-weight: bold; text-transform: uppercase; letter-spacing: 2px; padding-top: 30px;">Verified Appointment System • MORANASATECT</div>
+                </div>`;
+            };
+
+            const renderEventHtml = (e) => `
+                <div style="margin-bottom: 15px; border-left: 5px solid ${exportColors[e.color].bg}; padding-left: 15px; page-break-inside: avoid;">
+                    <div style="font-size: 14px; color: #64748b; margin-bottom: 2px; font-weight: bold;">${e.time} น. (${e.date.split('-').reverse().join('/')})</div>
+                    <div style="font-weight: 800; font-size: 18px; color: #1e293b; margin-bottom: 4px;">${escapeHTML(e.title)}</div>
+                    ${e.description ? `<div style="font-size: 13px; color: #475569; line-height: 1.4; white-space: pre-wrap;">${escapeHTML(e.description)}</div>` : ''}
+                </div>
+            `;
+
+            const totalItems = allActiveEvs.length;
+            let totalPages = 1;
+            if (totalItems > itemsPerPageP1) {
+                totalPages = 1 + Math.ceil((totalItems - itemsPerPageP1) / itemsPerPageNext);
+            }
+
             let grid = '';
             for (let i = 0; i < start; i++) grid += '<div></div>';
             for (let d = 1; d <= dim; d++) {
@@ -795,158 +848,129 @@
                 const evs = events.filter(e => isDateInRange(ds, e.date, e.endDate));
                 let bg = '', txt = 'color: #9ca3af;';
                 if(evs.length) {
-                    bg = `background-color: ${exportColors[evs[0].color].bg}; border-radius: 999px; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;`;
+                    bg = `background-color: ${exportColors[evs[0].color].bg}; border-radius: 999px; width: 38px; height: 38px; display: flex; align-items: center; justify-content: center;`;
                     txt = 'color: white; font-weight: 800;';
                 }
-                grid += `<div style="display: flex; justify-content: center; align-items: center; height: 50px;"><div style="${bg}"><span style="${txt} font-size: 20px;">${d}</span></div></div>`;
+                grid += `<div style="display: flex; justify-content: center; align-items: center; height: 48px;"><div style="${bg}"><span style="${txt} font-size: 18px;">${d}</span></div></div>`;
             }
-            const activeEvs = events.filter(e => e.date.startsWith(`${y}-${String(m+1).padStart(2,'0')}`)).sort((a,b) => a.date.localeCompare(b.date));
-            const listHtml = activeEvs.map(e => `
-                <div style="margin-bottom: 15px; border-left: 5px solid ${exportColors[e.color].bg}; padding-left: 15px; page-break-inside: avoid;">
-                    <div style="font-weight: 800; font-size: 20px; color: #1e293b;">${escapeHTML(e.title)}</div>
-                    <div style="font-size: 16px; color: #64748b; margin-bottom: 4px;">${e.date.split('-').reverse().join('/')} - ${e.time} น.</div>
-                    ${e.description ? `<div style="font-size: 14px; color: #475569; line-height: 1.4;">${escapeHTML(e.description)}</div>` : ''}
-                </div>
-            `).join('');
 
-            return `
-            <div id="capture-layout-wrapper" style="width: 1123px; height: 794px; background-color: #f8fafc; padding: 40px; font-family: 'Kanit', sans-serif; display: flex; flex-direction: column;">
-                <style>@import url('https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700;800;900&display=swap'); * { font-family: 'Kanit', sans-serif !important; }</style>
-                <div style="display: flex; flex-direction: column; align-items: center; margin-bottom: 40px;">
-                    <div class="preview-title-capsule" style="background-color: #4b5563; color: white; border-radius: 999px; padding: 12px 70px; margin-bottom: 10px;">
-                        <span style="font-size: 46px; font-weight: 800; line-height: 1;">ตารางนัดหมาย</span>
-                    </div>
-                    <span style="font-size: 26px; font-weight: 600; color: #4b5563;">เดือน${thaiMonths[m]} ${y + 543}</span>
-                </div>
-                <div style="display: flex; gap: 50px; flex: 1; overflow: hidden;">
-                    <div style="width: 480px; flex-shrink: 0; background: white; padding: 25px; border-radius: 35px; border: 1px solid #e2e8f0; display: flex; flex-direction: column;">
-                        <div style="display: flex; justify-content: space-between; margin-bottom: 25px; background: #94a3b8; padding: 15px 30px; border-radius: 20px; color: white; font-weight: 900; font-size: 24px;">
+            const p1Events = allActiveEvs.slice(0, itemsPerPageP1);
+            const p1Content = `
+                <div style="display: flex; gap: 40px; flex: 1; overflow: hidden;">
+                    <div style="width: 440px; flex-shrink: 0; background: white; padding: 20px; border-radius: 30px; border: 1px solid #e2e8f0; display: flex; flex-direction: column;">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 20px; background: #94a3b8; padding: 12px 25px; border-radius: 15px; color: white; font-weight: 900; font-size: 20px;">
                             <span>${engMonths[m]}</span><span>${y}</span>
                         </div>
-                        <div style="display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; font-size: 20px; font-weight: 800; color: #cbd5e1; margin-bottom: 15px;">
+                        <div style="display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; font-size: 16px; font-weight: 800; color: #cbd5e1; margin-bottom: 10px;">
                             <div>S</div><div>M</div><div>T</div><div>W</div><div>T</div><div>F</div><div>S</div>
                         </div>
                         <div style="display: grid; grid-template-columns: repeat(7, 1fr); flex: 1;">${grid}</div>
                     </div>
-                    <div style="flex: 1; overflow: hidden; padding-right: 15px;">
-                        <h3 style="font-size: 24px; font-weight: 800; color: #1e293b; margin-bottom: 25px; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px;">ตารางกิจกรรม</h3>
-                        ${listHtml || '<div style="color: #94a3b8;">ไม่มีรายการ</div>'}
+                    <div style="flex: 1; overflow: hidden;">
+                        <h3 style="font-size: 20px; font-weight: 800; color: #1e293b; margin-bottom: 20px; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px;">รายการกิจกรรม</h3>
+                        ${p1Events.map(e => renderEventHtml(e)).join('') || '<div style="color: #94a3b8;">ไม่มีรายการ</div>'}
+                        ${totalItems > itemsPerPageP1 ? '<div style="text-align: center; color: #94a3b8; font-weight: bold; font-size: 12px; margin-top: 10px;">(มีต่อหน้าถัดไป...)</div>' : ''}
                     </div>
                 </div>
-            </div>`;
-        };
+            `;
+            pages.push(renderBasePage(p1Content, 1, totalPages));
 
-        // Main Logic & Handlers
-        window.toggleAdminModal = () => {
-            if (isAdmin) { 
-                isAdmin = false; 
-                updateAdminUI(); 
-            } else { 
-                const passInput = document.getElementById('auth-password');
-                if(passInput) passInput.value = '';
-                const authErr = document.getElementById('auth-error');
-                if(authErr) authErr.classList.add('hidden');
-                document.getElementById('auth-modal').classList.remove('hidden');
-                document.getElementById('auth-modal').classList.add('flex');
-                updateScrollLock();
-            }
-        };
-        
-        window.closeAuthModal = () => { 
-            document.getElementById('auth-modal').classList.add('hidden'); 
-            document.getElementById('auth-modal').classList.remove('flex'); 
-            updateScrollLock();
-        };
-        
-        window.closePreviewModal = () => { 
-            document.getElementById('preview-modal').classList.add('hidden'); 
-            document.getElementById('preview-modal').classList.remove('flex'); 
-            updateScrollLock();
-        };
-        
-        document.getElementById('auth-form').addEventListener('submit', (e) => {
-            e.preventDefault();
-            if (document.getElementById('auth-password').value === '65030900') {
-                isAdmin = true; 
-                updateAdminUI(); 
-                closeAuthModal();
-            } else { 
-                document.getElementById('auth-error').classList.remove('hidden'); 
-            }
-        });
-
-        document.getElementById('add-event-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            if (!user) return alert("รอเชื่อมต่อ...");
-            const subBtn = document.getElementById('submit-btn');
-            const subTxt = document.getElementById('submit-text');
-            const editId = document.getElementById('ev-id').value;
-            
-            const rows = document.querySelectorAll('.link-form-row');
-            const links = Array.from(rows).map(r => ({
-                label: r.querySelector('.link-label').value,
-                url: r.querySelector('.link-url').value,
-                order: r.querySelector('.link-order').value || 0
-            })).filter(l => l.url);
-
-            const data = {
-                title: document.getElementById('ev-title').value,
-                time: document.getElementById('ev-time').value,
-                endDate: document.getElementById('ev-enddate').value,
-                color: document.getElementById('ev-color').value,
-                description: document.getElementById('ev-desc').value,
-                links: links,
-                date: selectedDate,
-                updatedAt: new Date().toISOString()
-            };
-
-            subBtn.disabled = true;
-            if(subTxt) subTxt.innerText = "กำลังบันทึก...";
-
-            try {
-                if(editId) await updateDoc(doc(db, 'calendar_events', editId), data);
-                else { 
-                    data.createdAt = new Date().toISOString(); 
-                    await addDoc(collection(db, 'calendar_events'), data); 
+            if (totalItems > itemsPerPageP1) {
+                for (let i = 1; i < totalPages; i++) {
+                    const startIdx = itemsPerPageP1 + (i - 1) * itemsPerPageNext;
+                    const nextEvents = allActiveEvs.slice(startIdx, startIdx + itemsPerPageNext);
+                    const pxContent = `
+                        <div style="flex: 1; padding: 0 10px; overflow: hidden;">
+                             <h3 style="font-size: 20px; font-weight: 800; color: #1e293b; margin-bottom: 20px; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px;">รายการกิจกรรม (ต่อ)</h3>
+                             <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 30px;">
+                                ${nextEvents.map(e => renderEventHtml(e)).join('')}
+                             </div>
+                        </div>
+                    `;
+                    pages.push(renderBasePage(pxContent, i + 1, totalPages));
                 }
-                resetForm(); 
-                closeDetailsModal();
-            } catch (err) { 
-                alert(err.message); 
+            }
+            return pages;
+        };
+
+        window.cachedExportDataURLs = []; 
+
+        async function openPreviewModal() {
+            const loading = document.getElementById('loading');
+            const previewContainer = document.getElementById('preview-images-container');
+            document.getElementById('loading-text').innerText = "กำลังสร้างภาพพรีวิว (อาจใช้เวลาสักครู่)...";
+            loading.classList.remove('hidden');
+            if(previewContainer) previewContainer.innerHTML = ''; 
+            window.cachedExportDataURLs = [];
+            
+            try {
+                await document.fonts.ready;
+                const pagesHtml = generateExportPagesHTML();
+                const renderer = document.getElementById('offscreenRenderer');
+                
+                for (let i = 0; i < pagesHtml.length; i++) {
+                    renderer.innerHTML = pagesHtml[i];
+                    const wrap = renderer.querySelector(`[id^="capture-layout-wrapper"]`);
+                    void wrap.offsetWidth; 
+                    await new Promise(r => setTimeout(r, 1000));
+                    
+                    const dataUrl = await htmlToImage.toPng(wrap, {
+                        quality: 1, pixelRatio: 3, cacheBust: true, useCORS: true,
+                        filter: (node) => {
+                            if (node.tagName === 'LINK' || node.tagName === 'STYLE') {
+                                try { if (node.sheet && node.sheet.cssRules) return true; } catch (e) { return false; }
+                            }
+                            return true;
+                        }
+                    });
+                    
+                    window.cachedExportDataURLs.push(dataUrl);
+                    
+                    const img = document.createElement('img');
+                    img.src = dataUrl;
+                    img.className = "max-w-full h-auto rounded-xl shadow-lg border border-slate-200 fade-in";
+                    if(previewContainer) previewContainer.appendChild(img);
+                }
+                
+                document.getElementById('preview-modal').classList.remove('hidden');
+                document.getElementById('preview-modal').classList.add('flex');
+                updateScrollLock();
+            } catch (e) { 
+                alert("ล้มเหลว: " + e.message); 
             } finally { 
-                subBtn.disabled = false; 
-                if(subTxt) subTxt.innerText = editId ? "อัปเดตข้อมูล" : "บันทึกกิจกรรม";
+                loading.classList.add('hidden'); 
             }
-        });
+        }
 
-        window.handleDeleteEvent = async (id) => {
-            if (isAdmin && confirm("ยืนยันการลบ?")) {
-                await deleteDoc(doc(db, 'calendar_events', id));
-                renderAdminHistory();
-                renderModalDetails();
-            }
-        };
-
-        window.downloadFromPreview = (type) => {
-            if (!window.cachedExportDataURL) return;
-            const fn = `Calendar_${currentDate.getMonth()+1}_${currentDate.getFullYear()+543}`;
+        function downloadFromPreview(type) {
+            if (!window.cachedExportDataURLs.length) return;
+            const monthName = thaiMonths[currentDate.getMonth()];
+            const yearThai = currentDate.getFullYear() + 543;
+            const baseName = `ตารางนัดหมาย_${monthName}_${yearThai}`;
+            
             if (type === 'image') {
-                const a = document.createElement('a'); 
-                a.download = fn + '.png'; 
-                a.href = window.cachedExportDataURL; 
-                a.click();
+                window.cachedExportDataURLs.forEach((url, idx) => {
+                    const a = document.createElement('a'); 
+                    a.download = `${baseName}_Page${idx+1}.png`; 
+                    a.href = url; 
+                    a.click();
+                });
             } else {
-                const pdf = new jspdf.jsPDF('l', 'px', [1123, 794]);
-                pdf.addImage(window.cachedExportDataURL, 'PNG', 0, 0, 1123, 794);
-                pdf.save(fn + '.pdf');
+                const { jsPDF } = window.jspdf;
+                const pdf = new jsPDF('l', 'px', [1123, 794]);
+                window.cachedExportDataURLs.forEach((url, idx) => {
+                    if (idx > 0) pdf.addPage([1123, 794], 'l');
+                    pdf.addImage(url, 'PNG', 0, 0, 1123, 794);
+                });
+                pdf.save(`${baseName}.pdf`);
             }
-        };
+        }
 
-        window.handlePrevMonth = () => { currentDate.setMonth(currentDate.getMonth() - 1); renderCalendar(); };
-        window.handleNextMonth = () => { currentDate.setMonth(currentDate.getMonth() + 1); renderCalendar(); };
-        window.handleGoToday = () => { currentDate = new Date(); renderCalendar(); };
+        function handlePrevMonth() { currentDate.setMonth(currentDate.getMonth() - 1); renderCalendar(); }
+        function handleNextMonth() { currentDate.setMonth(currentDate.getMonth() + 1); renderCalendar(); }
+        function handleGoToday() { currentDate = new Date(); renderCalendar(); }
         
-        window.openDayDetails = (ds) => { 
+        function openDayDetails(ds) { 
             selectedDate = ds; 
             const ed = document.getElementById('ev-enddate');
             if(ed) ed.min = ds;
@@ -954,14 +978,34 @@
             document.getElementById('details-modal').classList.remove('hidden'); 
             document.getElementById('details-modal').classList.add('flex'); 
             updateScrollLock();
-        };
+        }
         
-        window.closeDetailsModal = () => { 
+        function closeDetailsModal() { 
             document.getElementById('details-modal').classList.add('hidden'); 
             document.getElementById('details-modal').classList.remove('flex'); 
             resetForm();
             updateScrollLock();
-        };
+        }
+
+        function closeAuthModal() { 
+            document.getElementById('auth-modal').classList.add('hidden'); 
+            document.getElementById('auth-modal').classList.remove('flex'); 
+            updateScrollLock();
+        }
+        
+        function closePreviewModal() { 
+            document.getElementById('preview-modal').classList.add('hidden'); 
+            document.getElementById('preview-modal').classList.remove('flex'); 
+            updateScrollLock();
+        }
+
+        async function handleDeleteEvent(id) {
+            if (isAdmin && confirm("ยืนยันการลบ?")) {
+                await deleteDoc(doc(db, 'calendar_events', id));
+                renderAdminHistory();
+                renderModalDetails();
+            }
+        }
 
         const init = async () => {
             try { await signInAnonymously(auth); } catch (e) {}
