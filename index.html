@@ -56,7 +56,7 @@
         .drag-handle:active { cursor: grabbing; }
     </style>
 </head>
-<body class="bg-[#F8FAFC] text-slate-800 font-sans min-h-screen flex justify-center overflow-x-hidden">
+<body class="bg-[#F8FAFC] text-slate-800 font-sans min-h-screen flex justify-center overflow-x-hidden relative">
 
     <!-- Loading Screen -->
     <div id="loading" class="fixed inset-0 bg-slate-50/90 backdrop-blur-sm z-[200] flex flex-col items-center justify-center">
@@ -141,7 +141,6 @@
                         <select id="cfg-annc-event-id" class="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500/20">
                             <option value="">-- ไม่แนบกิจกรรม (แสดงแค่ข้อความ) --</option>
                             <option value="TODAY_EVENTS">-- 🌟 แสดงกิจกรรมของวันนี้ (อัปเดตอัตโนมัติ) --</option>
-                            <!-- ตัวเลือกกิจกรรมอื่นๆ จะถูกเติมด้วย JS -->
                         </select>
                     </div>
                     <div class="pt-4 flex gap-2">
@@ -169,7 +168,6 @@
         <!-- Admin Toggle Button & Status Panel -->
         <div class="absolute top-4 right-4 sm:top-6 sm:right-6 flex items-center gap-2 z-10">
             <div id="site-control-panel" class="hidden fade-in bg-white/80 backdrop-blur border border-slate-200 rounded-xl p-1.5 shadow-sm flex items-center">
-                <!-- ปุ่มตั้งค่าประกาศ -->
                 <button id="admin-annc-toggle" onclick="openAdminAnnouncement()" class="px-2 py-1 bg-amber-50 hover:bg-amber-100 text-amber-600 border border-amber-200 rounded-lg text-[10px] font-bold transition-all shadow-sm flex items-center gap-1 mr-2 ml-0.5">
                     <i data-lucide="megaphone" class="w-3 h-3"></i> ประกาศ
                 </button>
@@ -197,10 +195,9 @@
         <div class="flex flex-col lg:flex-row gap-6 items-start">
             
             <!-- SECTION: DASHBOARDS (Mobile Order 1 | Desktop Order 2) -->
-            <!-- ปรับสัดส่วน Desktop ให้ใหญ่ขึ้น (lg:w-[55%]) เพื่อให้ปฏิทินเล็กลง -->
-            <div class="w-full lg:w-[55%] space-y-4 order-1 lg:order-2 shrink-0">
+            <div class="w-full lg:flex-[1.2] space-y-4 order-1 lg:order-2 shrink-0">
                 <!-- Today's Events -->
-                <div class="bg-white rounded-[1.5rem] shadow-sm border border-slate-100 p-4 sm:p-5 flex flex-col max-h-[220px] lg:max-h-none overflow-hidden text-sm">
+                <div class="bg-white rounded-[1.5rem] shadow-sm border border-slate-100 p-4 sm:p-5 flex flex-col max-h-[250px] lg:max-h-none overflow-hidden text-sm">
                     <div class="flex items-center gap-2 mb-3 shrink-0">
                         <div class="p-1.5 bg-indigo-50 text-indigo-500 rounded-full">
                             <i data-lucide="calendar-check" class="w-4 h-4"></i>
@@ -226,20 +223,18 @@
             </div>
 
             <!-- SECTION: CALENDAR (Mobile Order 2 | Desktop Order 1) -->
-            <!-- ปรับให้ปฏิทินเล็กลงเหลือ 45% สำหรับในคอม -->
-            <div class="w-full lg:w-[45%] bg-white rounded-[2.5rem] shadow-xl border border-white p-6 order-2 lg:order-1">
+            <div class="w-full lg:flex-1 bg-white rounded-[2.5rem] shadow-xl border border-white p-6 order-2 lg:order-1">
                 <div class="flex items-center justify-between mb-6 px-2">
                     <button onclick="handlePrevMonth()" class="p-2 hover:bg-slate-100 rounded-lg text-indigo-600 transition-colors">
                         <i data-lucide="chevron-left" class="w-5 h-5"></i>
                     </button>
-                    <div class="text-center">
-                        <h2 id="calendar-month-year" class="text-base sm:text-lg font-black text-slate-800 cursor-pointer hover:text-indigo-600 transition-colors leading-none" onclick="handleGoToday()" title="กลับไปวันนี้"></h2>
+                    <div class="text-center overflow-hidden">
+                        <h2 id="calendar-month-year" class="text-base sm:text-lg lg:text-xl font-black text-slate-800 cursor-pointer hover:text-indigo-600 transition-all leading-none whitespace-nowrap" onclick="handleGoToday()" title="กลับไปวันนี้"></h2>
                     </div>
                     <button onclick="handleNextMonth()" class="p-2 hover:bg-slate-100 rounded-lg text-indigo-600 transition-colors">
                         <i data-lucide="chevron-right" class="w-5 h-5"></i>
                     </button>
                 </div>
-                <!-- ปุ่มพรีวิว ย้ายมาอยู่ใต้หัวข้อปฏิทินในโหมดคอมเพื่อให้ดูไม่เบียด -->
                 <div id="admin-export-buttons" class="hidden fade-in mb-4 text-center">
                     <button onclick="openPreviewModal()" class="inline-flex items-center gap-2 px-4 py-1.5 bg-indigo-600 text-white hover:bg-indigo-700 rounded-xl text-[11px] font-semibold transition-colors shadow-sm w-full justify-center">
                         <i data-lucide="printer" class="w-3.5 h-3.5"></i> พรีวิว & ส่งออก
@@ -342,43 +337,17 @@
                                 <input type="date" id="ev-enddate" class="w-full px-2.5 py-1.5 bg-white border border-slate-200 rounded-md text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500">
                             </div>
                             
-                            <!-- Custom Color Picker -->
+                            <!-- Custom Color Picker Trigger -->
                             <div class="w-[100px] relative">
                                 <label class="block text-[10px] sm:text-xs font-medium text-slate-500 mb-1 tracking-tighter">สีนัดหมาย</label>
-                                <div id="color-picker-btn" class="w-full px-2 py-1.5 bg-white border border-slate-200 rounded-md text-xs sm:text-sm focus:outline-none cursor-pointer flex items-center justify-between shadow-sm" onclick="toggleColorPicker()">
+                                <div id="color-picker-btn" class="w-full px-2 py-1.5 bg-white border border-slate-200 rounded-md text-xs sm:text-sm focus:outline-none cursor-pointer flex items-center justify-between shadow-sm" onclick="toggleColorPicker(event)">
                                     <div class="flex items-center gap-1.5">
                                         <div id="selected-color-preview" class="w-3.5 h-3.5 rounded-full" style="background-color: #818cf8;"></div>
                                         <span id="selected-color-text" class="text-[10px] text-slate-600 font-semibold uppercase">#818CF8</span>
                                     </div>
                                 </div>
-                                
-                                <!-- Color Picker Popover (MS Word Style) -->
-                                <div id="color-picker-popover" class="hidden absolute bottom-full right-0 sm:left-0 sm:right-auto mb-1 bg-white border border-slate-200 shadow-xl rounded-xl p-3 w-56 z-[200]">
-                                    <div class="mb-3">
-                                        <div class="text-[9px] font-bold text-slate-400 mb-1.5 uppercase tracking-wider">สีที่เคยใช้</div>
-                                        <div id="recent-colors" class="flex flex-wrap gap-1.5"></div>
-                                    </div>
-                                    <div class="mb-3">
-                                        <div class="text-[9px] font-bold text-slate-400 mb-1.5 uppercase tracking-wider">สีแนะนำ</div>
-                                        <div class="flex flex-wrap gap-1.5">
-                                            <div class="w-5 h-5 rounded-full cursor-pointer border border-slate-200 hover:scale-110 transition-transform shadow-sm" style="background-color: #818cf8;" onclick="selectColor('#818cf8')"></div>
-                                            <div class="w-5 h-5 rounded-full cursor-pointer border border-slate-200 hover:scale-110 transition-transform shadow-sm" style="background-color: #34d399;" onclick="selectColor('#34d399')"></div>
-                                            <div class="w-5 h-5 rounded-full cursor-pointer border border-slate-200 hover:scale-110 transition-transform shadow-sm" style="background-color: #fbbf24;" onclick="selectColor('#fbbf24')"></div>
-                                            <div class="w-5 h-5 rounded-full cursor-pointer border border-slate-200 hover:scale-110 transition-transform shadow-sm" style="background-color: #f87171;" onclick="selectColor('#f87171')"></div>
-                                            <div class="w-5 h-5 rounded-full cursor-pointer border border-slate-200 hover:scale-110 transition-transform shadow-sm" style="background-color: #a78bfa;" onclick="selectColor('#a78bfa')"></div>
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <div class="text-[9px] font-bold text-slate-400 mb-1.5 uppercase tracking-wider">สีอื่นๆ (ดูดสี)</div>
-                                        <label class="flex items-center gap-2 cursor-pointer border border-slate-200 p-1.5 rounded-lg hover:bg-slate-50 transition-colors">
-                                            <input type="color" id="custom-color-input" class="w-6 h-6 rounded cursor-pointer border-0 p-0 bg-transparent" onchange="selectColor(this.value)">
-                                            <span class="text-[10px] font-semibold text-slate-600">เลือกสีแบบกำหนดเอง...</span>
-                                        </label>
-                                    </div>
-                                </div>
                                 <input type="hidden" id="ev-color" value="#818cf8">
                             </div>
-
                         </div>
 
                         <!-- Multi-Links Support (Drag & Drop) -->
@@ -396,7 +365,7 @@
                             <label class="block text-[10px] sm:text-xs font-medium text-slate-500 mb-1">รายละเอียดเพิ่มเติม</label>
                             <textarea id="ev-desc" rows="2" oninput="this.style.height = ''; this.style.height = this.scrollHeight + 'px'" class="w-full px-2.5 py-1.5 bg-white border border-slate-200 rounded-md text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 overflow-hidden resize-none" placeholder="รายละเอียด..."></textarea>
                         </div>
-                        <div class="flex gap-2">
+                       <div class="flex gap-2">
                             <button type="button" id="cancel-edit-btn" onclick="resetForm()" class="hidden flex-1 py-2 bg-slate-200 hover:bg-slate-300 text-slate-600 rounded-lg text-xs sm:text-sm font-bold transition-all">
                                 ยกเลิก
                             </button>
@@ -491,6 +460,31 @@
         </div>
     </div>
 
+    <!-- Color Picker Popover (Moved to body level to escape overflow clipping) -->
+    <div id="color-picker-popover" class="hidden fixed bg-white border border-slate-200 shadow-2xl rounded-xl p-4 w-56 z-[99999] animate-in zoom-in-95 duration-100">
+        <div class="mb-3">
+            <div class="text-[10px] font-bold text-slate-400 mb-2 uppercase tracking-wider">สีที่เคยใช้</div>
+            <div id="recent-colors" class="flex flex-wrap gap-2"></div>
+        </div>
+        <div class="mb-4">
+            <div class="text-[10px] font-bold text-slate-400 mb-2 uppercase tracking-wider">สีแนะนำ</div>
+            <div class="flex flex-wrap gap-2">
+                <div class="w-6 h-6 rounded-full cursor-pointer border border-slate-200 hover:scale-110 transition-transform shadow-sm" style="background-color: #818cf8;" onclick="selectColor('#818cf8')"></div>
+                <div class="w-6 h-6 rounded-full cursor-pointer border border-slate-200 hover:scale-110 transition-transform shadow-sm" style="background-color: #34d399;" onclick="selectColor('#34d399')"></div>
+                <div class="w-6 h-6 rounded-full cursor-pointer border border-slate-200 hover:scale-110 transition-transform shadow-sm" style="background-color: #fbbf24;" onclick="selectColor('#fbbf24')"></div>
+                <div class="w-6 h-6 rounded-full cursor-pointer border border-slate-200 hover:scale-110 transition-transform shadow-sm" style="background-color: #f87171;" onclick="selectColor('#f87171')"></div>
+                <div class="w-6 h-6 rounded-full cursor-pointer border border-slate-200 hover:scale-110 transition-transform shadow-sm" style="background-color: #a78bfa;" onclick="selectColor('#a78bfa')"></div>
+            </div>
+        </div>
+        <div class="border-t border-slate-100 pt-3">
+            <div class="text-[10px] font-bold text-slate-400 mb-2 uppercase tracking-wider">สีอื่นๆ (ดูดสี)</div>
+            <label class="flex items-center gap-2 cursor-pointer border border-slate-200 p-2 rounded-xl hover:bg-slate-50 transition-colors shadow-sm">
+                <input type="color" id="custom-color-input" class="w-6 h-6 rounded cursor-pointer border-0 p-0 bg-transparent" onchange="selectColor(this.value)">
+                <span class="text-xs font-bold text-slate-600">เลือกสีแบบกำหนดเอง...</span>
+            </label>
+        </div>
+    </div>
+
     <!-- Hidden Renderer -->
     <div id="offscreenRenderer" style="position: fixed; top: 0; left: -3000vw; z-index: -9999; pointer-events: none; opacity: 0;"></div>
 
@@ -534,6 +528,20 @@
         const getHexColor = (c) => legacyColors[c] || c || '#818cf8';
         let recentColors = ['#818cf8', '#34d399', '#fbbf24', '#f87171', '#a78bfa']; // default recents
 
+        // เพิ่มการประกาศตัวแปร exportColors เพื่อใช้ในการพรีวิว
+        const exportColors = {
+            blue: { bg: '#818cf8' },
+            green: { bg: '#34d399' },
+           orange: { bg: '#fbbf24' },
+            red: { bg: '#f87171' },
+            purple: { bg: '#a78bfa' },
+            '#818cf8': { bg: '#818cf8' },
+            '#34d399': { bg: '#34d399' },
+            '#fbbf24': { bg: '#fbbf24' },
+            '#f87171': { bg: '#f87171' },
+            '#a78bfa': { bg: '#a78bfa' }
+        };
+
         function showToast(msg, isError = false) {
             const toast = document.createElement('div');
             toast.className = `fixed top-4 left-1/2 -translate-x-1/2 px-6 py-3 rounded-2xl shadow-xl z-[9999] text-sm font-bold text-white transition-all duration-300 transform -translate-y-full opacity-0 flex items-center gap-2 ${isError ? 'bg-rose-500' : 'bg-emerald-500'}`;
@@ -573,9 +581,29 @@
         window.closeUpcomingModal = closeUpcomingModal;
         
         // --- Color Picker Function ---
-        window.toggleColorPicker = () => {
-            document.getElementById('color-picker-popover').classList.toggle('hidden');
-            renderRecentColors();
+        window.toggleColorPicker = (e) => {
+            if(e) e.stopPropagation();
+            const btn = document.getElementById('color-picker-btn');
+            const pop = document.getElementById('color-picker-popover');
+            
+            if (pop.classList.contains('hidden')) {
+                pop.classList.remove('hidden');
+                renderRecentColors();
+                
+                const rect = btn.getBoundingClientRect();
+                pop.style.left = Math.min(rect.left, window.innerWidth - 240) + 'px'; 
+                
+                setTimeout(() => {
+                    const popHeight = pop.offsetHeight;
+                    if (rect.top > popHeight + 20) {
+                        pop.style.top = (rect.top - popHeight - 8) + 'px';
+                    } else {
+                        pop.style.top = (rect.bottom + 8) + 'px';
+                    }
+                }, 0);
+            } else {
+                pop.classList.add('hidden');
+            }
         };
 
         window.selectColor = (hex, saveHistory = true) => {
@@ -590,6 +618,11 @@
                 if(recentColors.length > 10) recentColors.pop();
                 localStorage.setItem('morana_recent_colors', JSON.stringify(recentColors));
             }
+
+            // อัปเดตสีใน exportColors ด้วย หากเป็นค่าใหม่
+            if (hex && !exportColors[hex]) {
+                exportColors[hex] = { bg: hex };
+            }
         };
 
         function renderRecentColors() {
@@ -602,7 +635,7 @@
             
             const container = document.getElementById('recent-colors');
             if(container) {
-                container.innerHTML = recentColors.map(c => `<div class="w-5 h-5 rounded-full cursor-pointer border border-slate-200 hover:scale-110 transition-transform shadow-sm" style="background-color: ${c}" onclick="selectColor('${c}')"></div>`).join('');
+                container.innerHTML = recentColors.map(c => `<div class="w-6 h-6 rounded-full cursor-pointer border border-slate-200 hover:scale-110 transition-transform shadow-sm" style="background-color: ${c}" onclick="selectColor('${c}')"></div>`).join('');
             }
         }
         
@@ -672,7 +705,7 @@
                 const linkedEv = events.find(e => e.id === popupConfig.event_id);
                 if (linkedEv) {
                     eventSnippet.classList.remove('hidden');
-                    eventCardContainer.className = "";
+                   eventCardContainer.className = "";
                     eventCardContainer.innerHTML = `
                         <div onclick="closeAnnouncement(); openEventView('${linkedEv.id}');" class="bg-white border border-slate-200 rounded-xl p-3 shadow-sm cursor-pointer hover:border-indigo-300 transition-all">
                             <div class="flex flex-col">
@@ -724,7 +757,7 @@
             });
             
             document.getElementById('admin-announcement-modal').classList.remove('hidden');
-            document.getElementById('admin-announcement-modal').classList.add('flex');
+           document.getElementById('admin-announcement-modal').classList.add('flex');
             updateScrollLock();
         }
 
@@ -766,7 +799,7 @@
         const isLinkLocked = (link, eventDate) => {
             if (!link) return false;
             if (link.status === 'always_open') return false; 
-            if (link.status === 'locked') return true;       
+            if (link.status === 'locked') return true;        
             const todayStr = getTodayString();
             return todayStr < eventDate; 
         };
@@ -778,9 +811,9 @@
                 const locked = isLinkLocked(l, e.date);
                 if (locked) {
                     return `
-                        <span onclick="event.stopPropagation()" class="px-2 py-0.5 bg-slate-100 text-slate-400 text-[9px] font-bold rounded border border-slate-200 flex items-center gap-1 shadow-sm cursor-not-allowed" title="ลิงก์จะเปิดใช้งานในวันที่นัดหมาย">
-                            <i data-lucide="lock" class="w-2 h-2"></i> ${escapeHTML(l.label || 'ลิงก์')}
-                        </span>
+                    <span onclick="event.stopPropagation()" class="px-2 py-0.5 bg-slate-100 text-slate-400 text-[9px] font-bold rounded border border-slate-200 flex items-center gap-1 shadow-sm cursor-not-allowed" title="ลิงก์จะเปิดใช้งานในวันที่นัดหมาย">
+                        <i data-lucide="lock" class="w-2 h-2"></i> ${escapeHTML(l.label || 'ลิงก์')}
+                    </span>
                     `;
                 } else {
                     return `
@@ -829,7 +862,6 @@
                         <div class="flex justify-between items-center mb-1.5">
                             <div class="flex items-center">
                                 <span class="text-[10px] font-bold px-1.5 py-0.5 rounded shadow-sm whitespace-nowrap" style="background-color: ${hex}; color: #ffffff;">${e.time} น.</span>
-                                ${dateHtml}
                             </div>
                         </div>
                         <h5 class="font-bold text-[12px] leading-tight mt-0.5 line-clamp-2 text-slate-800">${escapeHTML(e.title)}</h5>
@@ -850,7 +882,7 @@
             list.innerHTML = upcomingEvents.length ? upcomingEvents.map(e => eventToHtml(e, true, false)).join('') : `<div class="text-center py-10 text-slate-400 text-xs">ไม่มีกิจกรรมล่วงหน้า</div>`;
             
             document.getElementById('upcoming-modal').classList.remove('hidden');
-            document.getElementById('upcoming-modal').classList.add('flex');
+           document.getElementById('upcoming-modal').classList.add('flex');
             updateScrollLock();
         }
 
@@ -1212,7 +1244,7 @@
             document.getElementById('ev-desc').value = e.description || '';
             setTimeout(() => {
                 const descEl = document.getElementById('ev-desc');
-                if (descEl) {
+               if (descEl) {
                     descEl.style.height = 'auto';
                     descEl.style.height = descEl.scrollHeight + 'px';
                 }
@@ -1265,7 +1297,7 @@
             if(descEl) descEl.style.height = 'auto';
             
             const formContainer = document.getElementById('admin-form-container');
-            if(formContainer) {
+           if(formContainer) {
                 formContainer.classList.add('border-slate-100', 'bg-slate-50/50');
                 formContainer.classList.remove('border-amber-400', 'bg-amber-50/30', 'ring-4', 'ring-amber-50');
             }
@@ -1331,48 +1363,94 @@
             } catch (e) { showToast("เกิดข้อผิดพลาด", true); }
         }
 
+        // ตัวช่วยสำหรับดึงสี กรณีที่ข้อมูลเก่าไม่มีค่าสี เพื่อไม่ให้ระบบพังตอนพรีวิว
+        const safeColor = (c) => (c && exportColors[c]) ? c : 'blue';
+
         const generateExportPagesHTML = () => {
             const y = currentDate.getFullYear(), m = currentDate.getMonth();
+            const dim = new Date(y, m + 1, 0).getDate(), start = new Date(y, m, 1).getDay();
             const allActiveEvs = events.filter(e => e.date.startsWith(`${y}-${String(m+1).padStart(2,'0')}`)).sort((a,b) => a.date.localeCompare(b.date));
             
+            // เพิ่มชุดเวลาการทำข้อมูลปัจจุบัน
             const now = new Date();
             const tsStr = `${String(now.getDate()).padStart(2,'0')}/${String(now.getMonth()+1).padStart(2,'0')}/${now.getFullYear()+543} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')} น.`;
+            const todayStr = getTodayString(); 
             
-            const renderBasePage = (eventsHtml, pageNum, totalPages) => {
+            let gridHtml = '';
+            for (let i = 0; i < start; i++) gridHtml += `<div></div>`;
+            for (let d = 1; d <= dim; d++) {
+                const dayStr = `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+                const dayEvs = events.filter(e => isDateInRange(dayStr, e.date, e.endDate));
+                
+                let innerStyle = 'width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; margin: 0 auto; border-radius: 50%;';
+                let textStyle = 'color: #64748b; font-weight: 600; font-size: 16px;';
+
+                if (dayEvs.length > 0) {
+                    const c = safeColor(dayEvs[0].color);
+                    innerStyle += ` background-color: ${exportColors[c].bg}; box-shadow: 0 2px 4px rgba(0,0,0,0.1);`;
+                    textStyle = 'color: white; font-weight: 800; font-size: 16px;';
+                }
+
+                gridHtml += `
+                    <div style="display: flex; justify-content: center; align-items: center; height: 44px;">
+                        <div style="${innerStyle}">
+                            <span style="${textStyle}">${d}</span>
+                        </div>
+                    </div>
+                `;
+            }
+
+            const renderBasePage = (eventsHtml, pageNum, totalPages, gridH) => {
                 return `
                 <div id="capture-layout-wrapper-${pageNum}" style="width: 1123px; height: 794px; background-color: #f8fafc; padding: 40px; font-family: 'Kanit', sans-serif; display: flex; flex-direction: column; box-sizing: border-box;">
                     <style>
                         @import url('https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700;800;900&display=swap'); 
                         * { font-family: 'Kanit', sans-serif !important; }
                     </style>
-                    <div style="display: flex; flex-direction: column; align-items: center; margin-bottom: 25px;">
-                        <div class="preview-title-capsule" style="background-color: #4b5563; color: white; border-radius: 999px; padding: 12px 70px; margin-bottom: 10px;">
-                            <span style="font-size: 40px; font-weight: 800; line-height: 1;">ตารางนัดหมาย</span>
-                        </div>
-                        <span style="font-size: 22px; font-weight: 600; color: #4b5563;">เดือน${thaiMonths[m]} ${y + 543} ${totalPages > 1 ? '(หน้า ' + pageNum + '/' + totalPages + ')' : ''}</span>
+                <div style="display: flex; flex-direction: column; align-items: center; margin-bottom: 25px;">
+                    <div class="preview-title-capsule" style="background-color: #4b5563; color: white; border-radius: 999px; padding: 12px 70px; margin-bottom: 10px;">
+                        <span style="font-size: 40px; font-weight: 800; line-height: 1;">ตารางนัดหมาย</span>
                     </div>
-                    <div style="display: flex; gap: 40px; flex: 1; overflow: hidden; width: 100%; justify-content: center;">
-                        <!-- ช่องแสดงรายการฝั่งขวา (ขยายเต็มไม่มีปฏิทิน) -->
-                        <div style="flex: 1; display: flex; flex-direction: column; overflow: hidden; max-width: 900px;">
-                            <div style="flex: 1; overflow: visible;">
-                                ${eventsHtml || '<div style="color: #94a3b8; font-weight: 500; font-size: 16px; text-align: center; margin-top: 40px;">ไม่มีรายการกิจกรรมในเดือนนี้</div>'}
-                            </div>
+                    <span style="font-size: 22px; font-weight: 600; color: #4b5563;">เดือน${thaiMonths[m]} ${y + 543} ${totalPages > 1 ? '(หน้า ' + pageNum + '/' + totalPages + ')' : ''}</span>
+                </div>
+                <div style="display: flex; gap: 40px; flex: 1; overflow: hidden;">
+                    <!-- ปฏิทินฝั่งซ้าย (Inline Styles) -->
+                    <div style="width: 440px; flex-shrink: 0; background: white; padding: 25px; border-radius: 30px; border: 1px solid #e2e8f0; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05); display: flex; flex-direction: column;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; background: #94a3b8; padding: 16px 25px; border-radius: 16px; color: white; font-weight: 900; font-size: 22px; letter-spacing: 1px;">
+                            <span style="text-transform: uppercase;">${engMonths[m]}</span>
+                            <span>${y}</span>
+                        </div>
+                        <div style="display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; font-size: 16px; font-weight: 800; color: #cbd5e1; margin-bottom: 10px;">
+                            <div>S</div><div>M</div><div>T</div><div>W</div><div>T</div><div>F</div><div>S</div>
+                        </div>
+                        <div style="display: grid; grid-template-columns: repeat(7, 1fr); row-gap: 8px; flex: 1; align-content: start;">
+                            ${gridH}
                         </div>
                     </div>
                     
-                    <!-- ส่วน Footer -->
-                    <div style="display: flex; justify-content: space-between; align-items: flex-end; padding-top: 20px; margin-top: 10px;">
-                        <div style="color: #cbd5e1; font-size: 10px; font-weight: bold; text-transform: uppercase; letter-spacing: 2px;">Verified Appointment System • MORANASATECT</div>
-                        <div style="color: #94a3b8; font-size: 12px; font-weight: bold;">ข้อมูลเมื่อ: ${tsStr}</div>
+                    <!-- ช่องแสดงรายการฝั่งขวา -->
+                    <div style="flex: 1; display: flex; flex-direction: column; overflow: hidden;">
+                        <h3 style="font-size: 22px; font-weight: 800; color: #1e293b; margin-bottom: 20px; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px;">รายการกิจกรรม</h3>
+                        <div style="flex: 1; overflow: visible;">
+                            ${eventsHtml || '<div style="color: #94a3b8; font-weight: 500; font-size: 16px;">ไม่มีรายการกิจกรรมในเดือนนี้</div>'}
+                        </div>
                     </div>
-                </div>`;
+                </div>
+                
+                <!-- ส่วน Footer -->
+                <div style="display: flex; justify-content: space-between; align-items: flex-end; padding-top: 20px; margin-top: 10px;">
+                    <div style="color: #cbd5e1; font-size: 10px; font-weight: bold; text-transform: uppercase; letter-spacing: 2px;">Verified Appointment System • MORANASATECT</div>
+                    <div style="color: #94a3b8; font-size: 12px; font-weight: bold;">ข้อมูลเมื่อ: ${tsStr}</div>
+                </div>
+            </div>`;
             };
 
             const renderEventHtml = (e) => {
                 let desc = e.description || '';
                 let isTruncated = false;
-                const c = getHexColor(e.color);
+                const c = safeColor(e.color);
                 
+                // ตัดคำให้อยู่ใน 2 บรรทัด หรือความยาวไม่เกิน 150 ตัวอักษร
                 const lines = desc.split('\n');
                 if (lines.length > 2) {
                     desc = lines.slice(0, 2).join('\n');
@@ -1387,17 +1465,18 @@
                 if (e.description) {
                     let moreText = '';
                     if (isTruncated) {
-                        moreText = '... <span style="color: ' + c + '; font-weight: bold;">(ดูข้อมูลเพิ่มเติมผ่านลิ้งก์เว็บไซต์)</span>';
+                        moreText = '... <span style="color: ' + exportColors[c].bg + '; font-weight: bold;">(ดูข้อมูลเพิ่มเติมผ่านลิ้งก์เว็บไซต์)</span>';
                     }
                     descHtml = '<div style="font-size: 14px; color: #475569; line-height: 1.6; white-space: pre-wrap; margin-top: 6px; word-break: break-word;">' + escapeHTML(desc) + moreText + '</div>';
                 }
 
+                // จัดรูปแบบวันที่ หากมีหลายวันให้แสดง "ถึงวันที่"
                 const dateStrDisplay = (e.endDate && e.endDate !== e.date) 
                     ? `${e.date.split('-').reverse().join('/')} ถึง ${e.endDate.split('-').reverse().join('/')}` 
                     : e.date.split('-').reverse().join('/');
 
                 return `
-                <div style="margin-bottom: 24px; border-left: 4px solid ${c}; padding-left: 16px; page-break-inside: avoid; width: 100%; box-sizing: border-box;">
+                <div style="margin-bottom: 24px; border-left: 4px solid ${exportColors[c].bg}; padding-left: 16px; page-break-inside: avoid; width: 100%; box-sizing: border-box;">
                     <div style="font-size: 14px; color: #64748b; font-weight: 800; margin-bottom: 4px;">${e.time} น. (${dateStrDisplay})</div>
                     <div style="font-weight: 800; font-size: 18px; color: #1e293b; line-height: 1.3; word-break: break-word;">${escapeHTML(e.title)}</div>
                     ${descHtml}
@@ -1405,14 +1484,15 @@
                 `;
             };
 
+            // --- ระบบคำนวณแบ่งหน้าอัตโนมัติ ตามความสูงของตัวอักษรจริงเพื่อป้องกันการตัดตก ---
             const measureDiv = document.createElement('div');
-            measureDiv.style.width = '900px'; 
+            measureDiv.style.width = '560px'; // ขนาดความกว้างของฝั่งขวา (ประมาณการ)
             measureDiv.style.position = 'absolute';
             measureDiv.style.visibility = 'hidden';
             measureDiv.style.fontFamily = "'Kanit', sans-serif";
             document.body.appendChild(measureDiv);
 
-            const MAX_HEIGHT = 500; 
+            const MAX_HEIGHT = 450; // ความสูงปลอดภัยสูงสุดต่อ 1 หน้า (เหลือเผื่อหัว/ท้ายกระดาษ)
             const pagesData = [];
             let currentPageEventsHtml = '';
             let currentHeight = 0;
@@ -1420,8 +1500,9 @@
             for (const e of allActiveEvs) {
                 const evHtml = renderEventHtml(e);
                 measureDiv.innerHTML = evHtml;
-                const evHeight = measureDiv.offsetHeight + 15; 
+                const evHeight = measureDiv.offsetHeight + 15; // เผื่อขอบ margin-bottom ด้านล่าง
 
+                // ถ้านำบล็อกใหม่มาใส่แล้วความสูงเกินหน้ากระดาษ ให้ตัดแบ่งขึ้นหน้าใหม่
                 if (currentHeight + evHeight > MAX_HEIGHT && currentPageEventsHtml !== '') {
                     pagesData.push(currentPageEventsHtml);
                     currentPageEventsHtml = evHtml;
@@ -1431,18 +1512,19 @@
                     currentHeight += evHeight;
                 }
             }
-            
+              
+            // เก็บหน้าสุดท้ายเข้าอาร์เรย์
             if (currentPageEventsHtml !== '') {
                 pagesData.push(currentPageEventsHtml);
             }
             if (pagesData.length === 0) {
                 pagesData.push('');
             }
-            
+              
             document.body.removeChild(measureDiv);
 
             const totalPages = pagesData.length;
-            return pagesData.map((eventsHtml, idx) => renderBasePage(eventsHtml, idx + 1, totalPages));
+            return pagesData.map((eventsHtml, idx) => renderBasePage(eventsHtml, idx + 1, totalPages, gridHtml));
         };
 
         window.cachedExportDataURLs = []; 
@@ -1454,18 +1536,18 @@
             loading.classList.remove('hidden');
             if(previewContainer) previewContainer.innerHTML = ''; 
             window.cachedExportDataURLs = [];
-            
+              
             try {
                 await document.fonts.ready;
                 const pagesHtml = generateExportPagesHTML();
                 const renderer = document.getElementById('offscreenRenderer');
-                
+                  
                 for (let i = 0; i < pagesHtml.length; i++) {
                     renderer.innerHTML = pagesHtml[i];
                     const wrap = renderer.querySelector(`[id^="capture-layout-wrapper"]`);
                     void wrap.offsetWidth; 
                     await new Promise(r => setTimeout(r, 1000));
-                    
+                      
                     const dataUrl = await htmlToImage.toPng(wrap, {
                         quality: 1, pixelRatio: 3, cacheBust: true, useCORS: true,
                         filter: (node) => {
@@ -1475,15 +1557,15 @@
                             return true;
                         }
                     });
-                    
+                      
                     window.cachedExportDataURLs.push(dataUrl);
-                    
+                      
                     const img = document.createElement('img');
                     img.src = dataUrl;
                     img.className = "max-w-full h-auto rounded-xl shadow-lg border border-slate-200 fade-in";
                     if(previewContainer) previewContainer.appendChild(img);
                 }
-                
+                  
                 document.getElementById('preview-modal').classList.remove('hidden');
                 document.getElementById('preview-modal').classList.add('flex');
                 updateScrollLock();
@@ -1499,7 +1581,7 @@
             const monthName = thaiMonths[currentDate.getMonth()];
             const yearThai = currentDate.getFullYear() + 543;
             const baseName = `ตารางนัดหมาย_${monthName}_${yearThai}`;
-            
+              
             if (type === 'image') {
                 window.cachedExportDataURLs.forEach((url, idx) => {
                     const a = document.createElement('a'); 
@@ -1521,7 +1603,7 @@
         function handlePrevMonth() { currentDate.setMonth(currentDate.getMonth() - 1); renderCalendar(); }
         function handleNextMonth() { currentDate.setMonth(currentDate.getMonth() + 1); renderCalendar(); }
         function handleGoToday() { currentDate = new Date(); renderCalendar(); }
-        
+          
         function closeDetailsModal() { 
             document.getElementById('details-modal').classList.add('hidden'); 
             document.getElementById('details-modal').classList.remove('flex'); 
@@ -1534,7 +1616,7 @@
             document.getElementById('auth-modal').classList.remove('flex'); 
             updateScrollLock();
         }
-        
+          
         function closePreviewModal() { 
             document.getElementById('preview-modal').classList.add('hidden'); 
             document.getElementById('preview-modal').classList.remove('flex'); 
@@ -1577,7 +1659,7 @@
             eventForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
                 if (!isAdmin) return;
-                
+                  
                 const id = document.getElementById('ev-id').value;
                 const title = document.getElementById('ev-title').value;
                 const date = document.getElementById('ev-date').value;
@@ -1585,7 +1667,7 @@
                 const endDate = document.getElementById('ev-enddate').value;
                 const color = document.getElementById('ev-color').value;
                 const desc = document.getElementById('ev-desc').value;
-                
+                  
                 const links = [];
                 let orderCounter = 1; // เริ่มนับลำดับอิงจากตำแหน่งบนสุดลงล่าง
                 document.querySelectorAll('.link-form-row').forEach(row => {
@@ -1607,10 +1689,10 @@
                     const subBtn = document.getElementById('submit-btn');
                     const subTxt = document.getElementById('submit-text');
                     const origTxt = subTxt.innerText;
-                    
+                      
                     subTxt.innerText = 'กำลังบันทึก...';
                     subBtn.disabled = true;
-                    
+                      
                     if (id) {
                         await updateDoc(doc(db, 'calendar_events', id), eventData);
                         showToast('อัปเดตกิจกรรมสำเร็จ');
@@ -1618,13 +1700,13 @@
                         await addDoc(collection(db, 'calendar_events'), eventData);
                         showToast('เพิ่มนัดหมายใหม่สำเร็จ');
                     }
-                    
+                      
                     subTxt.innerText = origTxt;
                     subBtn.disabled = false;
-                    
+                      
                     selectedDate = date; // Update the view to the newly saved/moved date
                     resetForm();
-                    
+                      
                     // บังคับเรนเดอร์ใหม่หลังบันทึก
                     renderModalDetails();
                     renderDashboard();
@@ -1646,7 +1728,7 @@
                     onSnapshot(collection(db, 'calendar_events'), (snap) => {
                         events = snap.docs.map(d => ({ id: d.id, ...d.data() }));
                         isDataLoaded.events = true;
-                        
+                          
                         renderCalendar(); 
                         renderDashboard();
                         if (isAdmin) renderAdminHistory();
@@ -1654,19 +1736,19 @@
                         document.getElementById('loading').classList.add('hidden');
                         checkSiteVisibility();
                         checkAndShowAnnouncement(); // เช็คว่าพร้อมแสดงป๊อปอัปประกาศหรือยัง
-                        
+                          
                         // สร้างประวัติสีตั้งต้นสำหรับหน้า Admin จากกิจกรรมเก่า
                         const evColors = [...new Set(events.map(e => getHexColor(e.color)))].filter(Boolean);
                         evColors.forEach(c => { if(!recentColors.includes(c)) recentColors.unshift(c); });
                         recentColors = recentColors.slice(0, 10);
                     });
-                    
+                      
                     // โหลดการตั้งค่าเว็บ และ การตั้งค่าประกาศควบคู่กัน
                     onSnapshot(doc(db, 'settings', 'site_config'), (snapshot) => {
                         if(snapshot.exists()) { siteActive = snapshot.data().is_active; }
                         updateSiteStatusUI();
                     });
-                    
+                      
                     onSnapshot(doc(db, 'settings', 'popup_config'), (snapshot) => {
                         if(snapshot.exists()) {
                             popupConfig = snapshot.data();
