@@ -41,6 +41,10 @@
         @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
         
         .preview-title-capsule { white-space: nowrap !important; display: inline-flex !important; }
+        
+        /* สไตล์สำหรับการคลิกการ์ด */
+        .event-card-clickable { cursor: pointer; transition: all 0.2s ease; }
+        .event-card-clickable:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
     </style>
 </head>
 <body class="bg-[#F8FAFC] text-slate-800 font-sans min-h-screen flex justify-center overflow-x-hidden">
@@ -58,8 +62,16 @@
         </div>
         <h1 class="text-2xl font-bold text-slate-800 mb-2">ปิดปรับปรุงระบบชั่วคราว</h1>
         <p class="text-slate-500 max-w-xs">ขออภัยในความไม่สะดวก ขณะนี้เว็บไซต์กำลังอยู่ระหว่างการปรับปรุงข้อมูล กรุณาลองใหม่อีกครั้งในภายหลัง</p>
-        <!-- ปุ่มแอดมินในหน้าปิดเว็บ -->
-        <button onclick="toggleAdminModal()" class="mt-8 text-slate-300 hover:text-slate-500 text-sm underline">สำหรับแอดมิน</button>
+        
+        <!-- Footer Credit for Maintenance Screen -->
+        <div class="mt-auto pb-10 opacity-40">
+            <div class="flex items-center justify-center gap-2">
+                <i data-lucide="globe" class="w-4 h-4"></i>
+                <span class="text-xs font-bold uppercase tracking-tighter">Official Appointment Website</span>
+            </div>
+        </div>
+        
+        <button onclick="toggleAdminModal()" class="mt-4 text-slate-300 hover:text-slate-500 text-sm underline transition-colors">สำหรับแอดมิน</button>
     </div>
 
     <!-- Main Content Container -->
@@ -87,13 +99,13 @@
             <p id="site-offline-warning" class="text-xs font-bold text-rose-500 mt-1 hidden animate-pulse underline decoration-rose-200">● ขณะนี้เว็บไซต์อยู่ในสถานะปิดปรับปรุง (เฉพาะแอดมินที่เห็นหน้านี้)</p>
         </div>
 
-        <!-- RESPONSIVE GRID: Mobile (Dash Top) | Desktop (Calendar Left) -->
+        <!-- RESPONSIVE GRID -->
         <div class="flex flex-col lg:flex-row gap-6 items-start">
             
             <!-- SECTION: DASHBOARDS (Mobile Order 1 | Desktop Order 2) -->
-            <div class="w-full lg:w-1/3 space-y-4 order-1 lg:order-2">
+            <div class="w-full lg:w-[42%] space-y-4 order-1 lg:order-2 shrink-0">
                 <!-- Today's Events -->
-                <div class="bg-white rounded-[1.5rem] shadow-sm border border-slate-100 p-4 sm:p-5 flex flex-col max-h-[300px] lg:max-h-none overflow-hidden">
+                <div class="bg-white rounded-[1.5rem] shadow-sm border border-slate-100 p-4 sm:p-5 flex flex-col max-h-[220px] lg:max-h-none overflow-hidden">
                     <div class="flex items-center gap-2 mb-3 shrink-0">
                         <div class="p-1.5 bg-indigo-50 text-indigo-500 rounded-full">
                             <i data-lucide="calendar-check" class="w-4 h-4"></i>
@@ -104,7 +116,7 @@
                 </div>
 
                 <!-- Upcoming Events -->
-                <div class="bg-white rounded-[1.5rem] shadow-sm border border-slate-100 p-4 sm:p-5 flex flex-col max-h-[300px] lg:max-h-none overflow-hidden">
+                <div class="bg-white rounded-[1.5rem] shadow-sm border border-slate-100 p-4 sm:p-5 flex flex-col max-h-[280px] lg:max-h-none overflow-hidden">
                     <div class="flex items-center gap-2 mb-3 shrink-0">
                         <div class="p-1.5 bg-rose-50 text-rose-500 rounded-full">
                             <i data-lucide="bell" class="w-4 h-4"></i>
@@ -116,7 +128,7 @@
             </div>
 
             <!-- SECTION: CALENDAR (Mobile Order 2 | Desktop Order 1) -->
-            <div class="w-full lg:w-2/3 bg-white rounded-[2rem] shadow-sm border border-slate-100 p-4 sm:p-6 order-2 lg:order-1">
+            <div class="w-full lg:w-[58%] bg-white rounded-[2rem] shadow-sm border border-slate-100 p-4 sm:p-6 order-2 lg:order-1">
                 <div class="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4 px-1 sm:px-2">
                     <div class="flex items-center gap-2 sm:gap-4">
                         <button onclick="handlePrevMonth()" class="p-2 bg-slate-50 hover:bg-slate-100 text-slate-600 rounded-full transition-colors">
@@ -170,9 +182,20 @@
                 </table>
             </div>
         </div>
+
+        <!-- Footer Credit Web Tag -->
+        <footer class="py-10 mt-6 text-center border-t border-slate-100">
+            <div class="flex flex-col items-center gap-3">
+                <div class="flex items-center gap-2 px-3 py-1 bg-white border border-slate-200 rounded-full shadow-sm transition-transform hover:scale-105">
+                    <div class="w-2 h-2 bg-indigo-500 rounded-full animate-pulse"></div>
+                    <span class="text-[10px] font-bold text-slate-600 uppercase tracking-tighter">Verified Appointment System</span>
+                </div>
+                <p class="text-slate-400 text-[10px] font-medium tracking-wide">© 2024 MORANASATECT. All rights reserved.</p>
+            </div>
+        </footer>
     </div>
 
-    <!-- Details Modal -->
+    <!-- Date Details Modal (Shows list for a day) -->
     <div id="details-modal" class="fixed inset-0 z-[100] items-center justify-center p-3 sm:p-4 bg-slate-900/40 backdrop-blur-sm hidden">
         <div class="bg-white rounded-[1.5rem] shadow-2xl w-full max-w-md max-h-[90vh] flex flex-col overflow-hidden fade-in">
             <div class="flex justify-between items-start p-5 sm:px-6 pt-6 pb-4 border-b border-slate-100">
@@ -254,7 +277,51 @@
         </div>
     </div>
 
-    <!-- Admin Auth Modal (Z-Index: 110 - ต้องสูงกว่าหน้า Maintenance) -->
+    <!-- Event View Modal (New! For reading full details) -->
+    <div id="event-view-modal" class="fixed inset-0 z-[105] items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-sm hidden">
+        <div class="bg-white rounded-[2rem] shadow-2xl w-full max-w-lg max-h-[90vh] flex flex-col overflow-hidden fade-in">
+            <div class="flex justify-between items-center p-6 border-b border-slate-50">
+                <div class="flex items-center gap-3">
+                    <div id="view-ev-color-dot" class="w-3 h-3 rounded-full"></div>
+                    <h3 class="text-lg font-bold text-slate-800">รายละเอียดนัดหมาย</h3>
+                </div>
+                <button onclick="closeEventView()" class="p-2 text-slate-400 hover:bg-slate-100 rounded-full transition-colors">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            <div class="flex-1 overflow-y-auto p-6 space-y-6">
+                <div>
+                    <h2 id="view-ev-title" class="text-2xl font-black text-slate-800 leading-tight"></h2>
+                    <div class="flex flex-wrap gap-3 mt-3">
+                        <span class="flex items-center gap-1.5 text-xs font-bold text-slate-500 bg-slate-100 px-3 py-1.5 rounded-lg">
+                            <i data-lucide="calendar" class="w-3.5 h-3.5"></i> <span id="view-ev-date"></span>
+                        </span>
+                        <span class="flex items-center gap-1.5 text-xs font-bold text-slate-500 bg-slate-100 px-3 py-1.5 rounded-lg">
+                            <i data-lucide="clock" class="w-3.5 h-3.5"></i> <span id="view-ev-time"></span>
+                        </span>
+                    </div>
+                </div>
+                <div id="view-ev-desc-section" class="space-y-2">
+                    <h4 class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">รายละเอียด</h4>
+                    <p id="view-ev-desc" class="text-slate-600 leading-relaxed whitespace-pre-wrap text-sm sm:text-base bg-slate-50 p-4 rounded-2xl border border-slate-100"></p>
+                </div>
+                <div id="view-ev-links-section" class="space-y-3 hidden">
+                    <h4 class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">ลิงก์และปุ่มกด</h4>
+                    <div id="view-ev-links-container" class="flex flex-col gap-2"></div>
+                </div>
+            </div>
+            <div class="p-6 border-t border-slate-50 bg-slate-50/50 text-center">
+                <!-- Inner Modal Tag -->
+                <div class="mb-4 flex items-center justify-center gap-2 opacity-30">
+                    <i data-lucide="globe" class="w-3 h-3"></i>
+                    <span class="text-[9px] font-bold uppercase tracking-widest">MORANASATECT Official Service</span>
+                </div>
+                <button onclick="closeEventView()" class="w-full py-3 bg-white border border-slate-200 text-slate-700 rounded-xl font-bold hover:bg-slate-100 transition-colors shadow-sm">ปิดหน้าต่าง</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Auth Modal (Z-Index: 110) -->
     <div id="auth-modal" class="fixed inset-0 z-[110] items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm hidden">
         <div class="bg-white rounded-2xl shadow-xl w-full max-w-xs p-6 fade-in text-center">
             <div class="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -382,12 +449,12 @@
             const eventToHtml = (e, showFullDate = false) => {
                 const links = (e.links || []).sort((a,b) => (parseInt(a.order) || 0) - (parseInt(b.order) || 0));
                 const linksHtml = links.map(l => `
-                    <a href="${escapeHTML(l.url)}" target="_blank" class="px-2 py-0.5 bg-white/60 hover:bg-white text-[9px] font-bold rounded border border-white/40 flex items-center gap-1 transition-all shadow-sm">
+                    <a href="${escapeHTML(l.url)}" target="_blank" onclick="event.stopPropagation()" class="px-2 py-0.5 bg-white/60 hover:bg-white text-[9px] font-bold rounded border border-white/40 flex items-center gap-1 transition-all shadow-sm">
                         <i data-lucide="external-link" class="w-2 h-2"></i> ${escapeHTML(l.label || 'เปิดลิงก์')}
                     </a>
                 `).join('');
                 return `
-                    <div class="p-3 rounded-xl border relative transition-all bg-opacity-30 ${getColorClasses(e.color)}">
+                    <div onclick="openEventView('${e.id}')" class="event-card-clickable p-3 rounded-xl border relative transition-all bg-opacity-30 ${getColorClasses(e.color)}">
                         <div class="flex justify-between items-start mb-1">
                             <div class="flex-1 pr-4">
                                 ${showFullDate ? `<p class="text-[8px] font-semibold opacity-70 mb-0.5">${formatThaiDate(e.date)}</p>` : ''}
@@ -445,23 +512,23 @@
                 container.innerHTML = selEvs.map(e => {
                     const sortedLinks = (e.links || []).sort((a,b) => (parseInt(a.order) || 0) - (parseInt(b.order) || 0));
                     const linksHtml = sortedLinks.map(l => `
-                        <a href="${escapeHTML(l.url)}" target="_blank" class="px-3 py-1.5 bg-white/70 text-[10px] font-bold rounded-lg border border-white/50 flex items-center gap-1.5 shadow-sm transition-all hover:bg-white">
+                        <a href="${escapeHTML(l.url)}" target="_blank" onclick="event.stopPropagation()" class="px-3 py-1.5 bg-white/70 text-[10px] font-bold rounded-lg border border-white/50 flex items-center gap-1.5 shadow-sm transition-all hover:bg-white">
                             <i data-lucide="external-link" class="w-3.5 h-3.5"></i> ${escapeHTML(l.label || 'ลิงก์')}
                         </a>
                     `).join('');
                     const adminActions = isAdmin ? `
                         <div class="flex justify-end gap-2 mt-4 pt-3 border-t border-slate-200/40">
-                            <button onclick="handleEditEvent('${e.id}')" class="px-3 py-1.5 bg-indigo-50 text-indigo-600 rounded-lg text-[10px] font-bold flex items-center gap-1 hover:bg-indigo-100"><i data-lucide="edit-3" class="w-3.5 h-3.5"></i> แก้ไข</button>
-                            <button onclick="handleDeleteEvent('${e.id}')" class="px-3 py-1.5 bg-red-50 text-red-600 rounded-lg text-[10px] font-bold flex items-center gap-1 transition-all hover:bg-red-100"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i> ลบ</button>
+                            <button onclick="event.stopPropagation(); handleEditEvent('${e.id}')" class="px-3 py-1.5 bg-indigo-50 text-indigo-600 rounded-lg text-[10px] font-bold flex items-center gap-1 hover:bg-indigo-100 transition-all"><i data-lucide="edit-3" class="w-3.5 h-3.5"></i> แก้ไข</button>
+                            <button onclick="event.stopPropagation(); handleDeleteEvent('${e.id}')" class="px-3 py-1.5 bg-red-50 text-red-600 rounded-lg text-[10px] font-bold flex items-center gap-1 transition-all hover:bg-red-100"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i> ลบ</button>
                         </div>
                     ` : '';
                     return `
-                        <div class="p-4 rounded-2xl border relative bg-opacity-30 ${getColorClasses(e.color)}">
+                        <div onclick="openEventView('${e.id}')" class="event-card-clickable p-4 rounded-2xl border relative bg-opacity-30 ${getColorClasses(e.color)}">
                             <div class="flex justify-between items-start mb-3">
                                 <h5 class="font-bold text-sm leading-tight pr-6">${escapeHTML(e.title)}</h5>
                                 <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-white/60 border border-white/40 shadow-sm">${e.time} น.</span>
                             </div>
-                            ${e.description ? `<p class="text-[11px] opacity-80 whitespace-pre-wrap mb-4">${escapeHTML(e.description)}</p>` : ''}
+                            ${e.description ? `<p class="text-[11px] opacity-80 whitespace-pre-wrap mb-4 line-clamp-3">${escapeHTML(e.description)}</p>` : ''}
                             <div class="flex flex-wrap gap-2">${linksHtml}</div>
                             ${adminActions}
                         </div>
@@ -486,14 +553,61 @@
                         <td class="px-4 py-3 text-[11px] text-slate-500">${e.time} น.</td>
                         <td class="px-4 py-3 text-center">
                             <div class="flex justify-center gap-1">
-                                <button onclick="handleEditEvent('${e.id}')" class="p-1.5 text-indigo-500 hover:bg-indigo-50 rounded-md"><i data-lucide="edit-3" class="w-4 h-4"></i></button>
-                                <button onclick="handleDeleteEvent('${e.id}')" class="p-1.5 text-red-400 hover:bg-red-50 rounded-md"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                                <button onclick="handleEditEvent('${e.id}')" class="p-1.5 text-indigo-500 hover:bg-indigo-50 rounded-md transition-colors"><i data-lucide="edit-3" class="w-4 h-4"></i></button>
+                                <button onclick="handleDeleteEvent('${e.id}')" class="p-1.5 text-red-400 hover:bg-red-50 rounded-md transition-colors"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
                             </div>
                         </td>
                     </tr>
                 `).join('');
             }
             if(window.lucide) window.lucide.createIcons();
+        };
+
+        // Event View Logic
+        window.openEventView = (eventId) => {
+            const e = events.find(item => item.id === eventId);
+            if (!e) return;
+
+            document.getElementById('view-ev-title').innerText = e.title;
+            document.getElementById('view-ev-date').innerText = formatThaiDate(e.date) + (e.endDate ? ` - ${formatThaiDate(e.endDate)}` : '');
+            document.getElementById('view-ev-time').innerText = e.time + ' น.';
+            
+            const descEl = document.getElementById('view-ev-desc');
+            const descSection = document.getElementById('view-ev-desc-section');
+            if (e.description) {
+                descEl.innerText = e.description;
+                descSection.classList.remove('hidden');
+            } else {
+                descSection.classList.add('hidden');
+            }
+
+            const colorDot = document.getElementById('view-ev-color-dot');
+            colorDot.className = `w-3 h-3 rounded-full ${getDotColor(e.color)}`;
+
+            const linksContainer = document.getElementById('view-ev-links-container');
+            const linksSection = document.getElementById('view-ev-links-section');
+            const sortedLinks = (e.links || []).sort((a,b) => (parseInt(a.order) || 0) - (parseInt(b.order) || 0));
+            
+            if (sortedLinks.length > 0) {
+                linksContainer.innerHTML = sortedLinks.map(l => `
+                    <a href="${escapeHTML(l.url)}" target="_blank" class="w-full flex items-center justify-between p-4 bg-white border border-slate-200 rounded-2xl hover:border-indigo-500 hover:bg-indigo-50/30 transition-all group shadow-sm">
+                        <span class="font-bold text-slate-700 group-hover:text-indigo-600">${escapeHTML(l.label || 'เปิดลิงก์')}</span>
+                        <i data-lucide="chevron-right" class="w-4 h-4 text-slate-300 group-hover:text-indigo-500"></i>
+                    </a>
+                `).join('');
+                linksSection.classList.remove('hidden');
+            } else {
+                linksSection.classList.add('hidden');
+            }
+
+            document.getElementById('event-view-modal').classList.remove('hidden');
+            document.getElementById('event-view-modal').classList.add('flex');
+            if(window.lucide) window.lucide.createIcons();
+        };
+
+        window.closeEventView = () => {
+            document.getElementById('event-view-modal').classList.add('hidden');
+            document.getElementById('event-view-modal').classList.remove('flex');
         };
 
         // Admin Helpers
@@ -505,7 +619,7 @@
                 <div class="col-span-4"><input type="text" placeholder="ชื่อปุ่ม" value="${data.label}" class="link-label w-full px-2 py-1 text-[10px] border border-slate-100 rounded bg-slate-50 focus:bg-white outline-none"></div>
                 <div class="col-span-5"><input type="url" placeholder="URL..." value="${data.url}" class="link-url w-full px-2 py-1 text-[10px] border border-slate-100 rounded bg-slate-50 focus:bg-white outline-none"></div>
                 <div class="col-span-2"><input type="number" placeholder="ที่" value="${data.order}" class="link-order w-full px-1 py-1 text-[10px] border border-slate-100 rounded bg-slate-50 text-center outline-none"></div>
-                <div class="col-span-1 flex items-center justify-center"><button type="button" onclick="this.parentElement.parentElement.remove()" class="text-red-400 hover:text-red-600"><i data-lucide="minus-circle" class="w-4 h-4"></i></button></div>
+                <div class="col-span-1 flex items-center justify-center"><button type="button" onclick="this.parentElement.parentElement.remove()" class="text-red-400 hover:text-red-600 transition-colors"><i data-lucide="minus-circle" class="w-4 h-4"></i></button></div>
             `;
             container.appendChild(row);
             if(window.lucide) window.lucide.createIcons();
@@ -687,7 +801,7 @@
             if(!btn) return;
 
             if(siteActive) {
-                btn.className = "px-3 py-1 bg-emerald-50 text-emerald-600 border border-emerald-200 rounded-lg text-[10px] font-bold shadow-sm";
+                btn.className = "px-3 py-1 bg-emerald-50 text-emerald-600 border border-emerald-200 rounded-lg text-[10px] font-bold shadow-sm transition-all";
                 btn.innerText = "เปิดใช้งานอยู่";
                 if(warn) warn.classList.add('hidden');
             } else {
@@ -784,6 +898,7 @@
             if (isAdmin && confirm("ยืนยันการลบ?")) {
                 await deleteDoc(doc(db, 'calendar_events', id));
                 renderAdminHistory();
+                renderModalDetails();
             }
         };
 
