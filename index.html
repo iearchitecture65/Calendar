@@ -16,7 +16,7 @@
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
     
-    <!-- เปลี่ยนจาก html2canvas มาใช้ html-to-image แบบในโค้ดอ้างอิงเพื่อความสมบูรณ์ 100% -->
+    <!-- html-to-image & jsPDF -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html-to-image/1.11.11/html-to-image.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
@@ -32,97 +32,148 @@
 
     <style>
         body { font-family: 'Kanit', sans-serif; }
-        /* Custom Scrollbar */
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
         
-        /* Smooth Fade In */
         .fade-in { animation: fadeIn 0.3s ease-in-out; }
         @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+        
+        .preview-title-capsule { white-space: nowrap !important; display: inline-flex !important; }
     </style>
 </head>
 <body class="bg-[#F8FAFC] text-slate-800 font-sans min-h-screen flex justify-center overflow-x-hidden">
 
     <!-- Loading Screen -->
-    <div id="loading" class="fixed inset-0 bg-slate-50/90 backdrop-blur-sm z-[100] flex flex-col items-center justify-center">
+    <div id="loading" class="fixed inset-0 bg-slate-50/90 backdrop-blur-sm z-[200] flex flex-col items-center justify-center">
         <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-indigo-600 mb-4"></div>
         <p id="loading-text" class="text-slate-600 font-medium">กำลังโหลดข้อมูล...</p>
     </div>
 
+    <!-- Maintenance / Closed Screen (Z-Index: 90) -->
+    <div id="maintenance-screen" class="fixed inset-0 bg-white z-[90] flex flex-col items-center justify-center p-6 text-center hidden">
+        <div class="w-20 h-20 bg-rose-50 text-rose-500 rounded-full flex items-center justify-center mb-6">
+            <i data-lucide="construction" class="w-10 h-10"></i>
+        </div>
+        <h1 class="text-2xl font-bold text-slate-800 mb-2">ปิดปรับปรุงระบบชั่วคราว</h1>
+        <p class="text-slate-500 max-w-xs">ขออภัยในความไม่สะดวก ขณะนี้เว็บไซต์กำลังอยู่ระหว่างการปรับปรุงข้อมูล กรุณาลองใหม่อีกครั้งในภายหลัง</p>
+        <!-- ปุ่มแอดมินในหน้าปิดเว็บ -->
+        <button onclick="toggleAdminModal()" class="mt-8 text-slate-300 hover:text-slate-500 text-sm underline">สำหรับแอดมิน</button>
+    </div>
+
     <!-- Main Content Container -->
-    <div id="app-content" class="w-full max-w-4xl p-3 sm:p-6 lg:p-8 space-y-6 relative hidden">
+    <div id="app-content" class="w-full max-w-7xl p-3 sm:p-6 lg:p-8 space-y-6 relative hidden">
         
-        <!-- Admin Toggle Button -->
-        <button onclick="toggleAdminModal()" id="admin-toggle-btn" class="absolute top-4 right-4 sm:top-6 sm:right-6 p-2 rounded-full transition-all z-10 text-slate-300 hover:text-slate-500 hover:bg-white" title="เข้าสู่โหมดแอดมิน">
-            <i data-lucide="lock" id="admin-lock-icon" class="w-5 h-5"></i>
-        </button>
+        <!-- Admin Toggle Button & Status Panel -->
+        <div class="absolute top-4 right-4 sm:top-6 sm:right-6 flex flex-col items-end gap-2 z-10">
+            <button onclick="toggleAdminModal()" id="admin-toggle-btn" class="p-2 rounded-full transition-all text-slate-300 hover:text-slate-500 hover:bg-white" title="เข้าสู่โหมดแอดมิน">
+                <i data-lucide="lock" id="admin-lock-icon" class="w-5 h-5"></i>
+            </button>
+            <div id="site-control-panel" class="hidden fade-in bg-white/80 backdrop-blur border border-slate-200 rounded-xl p-1.5 shadow-sm flex items-center gap-2">
+                <span class="text-[10px] font-bold px-2 text-slate-500 uppercase tracking-wider">สถานะเว็บ:</span>
+                <button id="site-status-toggle" onclick="handleToggleSiteStatus()" class="px-3 py-1 rounded-lg text-[10px] font-bold transition-all shadow-sm">
+                    กำลังโหลด...
+                </button>
+            </div>
+        </div>
 
         <!-- Header -->
-        <div class="flex flex-col items-center justify-center pt-2 sm:pt-4 pb-2">
-            <div class="p-3 bg-white rounded-full shadow-sm mb-3 text-indigo-500">
+        <div class="flex flex-col items-center justify-center pt-2 sm:pt-4 pb-2 text-center">
+            <div class="p-3 bg-white rounded-full shadow-sm mb-3 text-indigo-500 mx-auto">
                 <i data-lucide="calendar" class="w-8 h-8"></i>
             </div>
             <h1 class="text-xl sm:text-2xl font-bold text-slate-800">ตารางนัดหมาย</h1>
-            <p class="text-xs sm:text-sm text-slate-500 mt-1">เลือกวันที่เพื่อดูรายละเอียด</p>
+            <p id="site-offline-warning" class="text-xs font-bold text-rose-500 mt-1 hidden animate-pulse underline decoration-rose-200">● ขณะนี้เว็บไซต์อยู่ในสถานะปิดปรับปรุง (เฉพาะแอดมินที่เห็นหน้านี้)</p>
         </div>
 
-        <!-- TOP DASHBOARD: 2 Columns -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <!-- LEFT: Today's Events -->
-            <div class="bg-white rounded-[1.5rem] shadow-sm border border-slate-100 p-4 sm:p-5 flex flex-col">
-                <div class="flex items-center gap-2 mb-3">
-                    <div class="p-1.5 bg-indigo-50 text-indigo-500 rounded-full">
-                        <i data-lucide="calendar-check" class="w-4 h-4"></i>
-                    </div>
-                    <h3 class="font-bold text-slate-800 text-sm">กิจกรรมในวันนี้</h3>
-                </div>
-                <div id="today-events-container" class="space-y-2.5 flex-1"></div>
-            </div>
-
-            <!-- RIGHT: Upcoming Events -->
-            <div class="bg-white rounded-[1.5rem] shadow-sm border border-slate-100 p-4 sm:p-5 flex flex-col">
-                <div class="flex items-center gap-2 mb-3">
-                    <div class="p-1.5 bg-rose-50 text-rose-500 rounded-full">
-                        <i data-lucide="bell" class="w-4 h-4"></i>
-                    </div>
-                    <h3 class="font-bold text-slate-800 text-sm">กิจกรรมที่กำลังมาถึง</h3>
-                </div>
-                <div id="upcoming-events-container" class="space-y-2 pt-1 flex-1 overflow-y-auto max-h-[250px] pr-1"></div>
-            </div>
-        </div>
-
-        <!-- Calendar Card -->
-        <div class="max-w-xl mx-auto w-full bg-white rounded-[2rem] shadow-sm border border-slate-100 p-4 sm:p-6 mt-4">
+        <!-- RESPONSIVE GRID: Mobile (Dash Top) | Desktop (Calendar Left) -->
+        <div class="flex flex-col lg:flex-row gap-6 items-start">
             
-            <!-- Calendar Header with Preview Button -->
-            <div class="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4 px-1 sm:px-2">
-                <div class="flex items-center gap-2 sm:gap-4">
-                    <button onclick="handlePrevMonth()" class="p-2 bg-slate-50 hover:bg-slate-100 text-slate-600 rounded-full transition-colors">
-                        <i data-lucide="chevron-left" class="w-5 h-5"></i>
-                    </button>
-                    <h2 id="calendar-month-year" class="text-lg sm:text-xl font-bold text-slate-800 cursor-pointer hover:text-indigo-600 transition-colors" onclick="handleGoToday()" title="กลับไปวันนี้"></h2>
-                    <button onclick="handleNextMonth()" class="p-2 bg-slate-50 hover:bg-slate-100 text-slate-600 rounded-full transition-colors">
-                        <i data-lucide="chevron-right" class="w-5 h-5"></i>
-                    </button>
+            <!-- SECTION: DASHBOARDS (Mobile Order 1 | Desktop Order 2) -->
+            <div class="w-full lg:w-1/3 space-y-4 order-1 lg:order-2">
+                <!-- Today's Events -->
+                <div class="bg-white rounded-[1.5rem] shadow-sm border border-slate-100 p-4 sm:p-5 flex flex-col max-h-[300px] lg:max-h-none overflow-hidden">
+                    <div class="flex items-center gap-2 mb-3 shrink-0">
+                        <div class="p-1.5 bg-indigo-50 text-indigo-500 rounded-full">
+                            <i data-lucide="calendar-check" class="w-4 h-4"></i>
+                        </div>
+                        <h3 class="font-bold text-slate-800 text-sm">กิจกรรมในวันนี้</h3>
+                    </div>
+                    <div id="today-events-container" class="space-y-2.5 overflow-y-auto pr-1"></div>
                 </div>
 
-                <!-- ปุ่มพรีวิวและดาวน์โหลด (แสดงเฉพาะ Admin) -->
-                <div id="admin-export-buttons" class="hidden fade-in">
-                    <button onclick="openPreviewModal()" class="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white hover:bg-indigo-700 rounded-xl text-sm font-semibold transition-colors shadow-sm">
-                        <i data-lucide="printer" class="w-4 h-4"></i> พรีวิว & ส่งออก
-                    </button>
+                <!-- Upcoming Events -->
+                <div class="bg-white rounded-[1.5rem] shadow-sm border border-slate-100 p-4 sm:p-5 flex flex-col max-h-[300px] lg:max-h-none overflow-hidden">
+                    <div class="flex items-center gap-2 mb-3 shrink-0">
+                        <div class="p-1.5 bg-rose-50 text-rose-500 rounded-full">
+                            <i data-lucide="bell" class="w-4 h-4"></i>
+                        </div>
+                        <h3 class="font-bold text-slate-800 text-sm">กิจกรรมที่กำลังมาถึง</h3>
+                    </div>
+                    <div id="upcoming-events-container" class="space-y-2 pt-1 overflow-y-auto pr-1"></div>
                 </div>
             </div>
 
-            <div class="grid grid-cols-7 gap-1 sm:gap-2 mb-2" id="calendar-days-header"></div>
-            <div class="grid grid-cols-7 gap-1 sm:gap-2" id="calendar-grid"></div>
+            <!-- SECTION: CALENDAR (Mobile Order 2 | Desktop Order 1) -->
+            <div class="w-full lg:w-2/3 bg-white rounded-[2rem] shadow-sm border border-slate-100 p-4 sm:p-6 order-2 lg:order-1">
+                <div class="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4 px-1 sm:px-2">
+                    <div class="flex items-center gap-2 sm:gap-4">
+                        <button onclick="handlePrevMonth()" class="p-2 bg-slate-50 hover:bg-slate-100 text-slate-600 rounded-full transition-colors">
+                            <i data-lucide="chevron-left" class="w-5 h-5"></i>
+                        </button>
+                        <h2 id="calendar-month-year" class="text-lg sm:text-xl font-bold text-slate-800 cursor-pointer hover:text-indigo-600 transition-colors" onclick="handleGoToday()" title="กลับไปวันนี้"></h2>
+                        <button onclick="handleNextMonth()" class="p-2 bg-slate-50 hover:bg-slate-100 text-slate-600 rounded-full transition-colors">
+                            <i data-lucide="chevron-right" class="w-5 h-5"></i>
+                        </button>
+                    </div>
+
+                    <div id="admin-export-buttons" class="hidden fade-in">
+                        <button onclick="openPreviewModal()" class="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white hover:bg-indigo-700 rounded-xl text-sm font-semibold transition-colors shadow-sm">
+                            <i data-lucide="printer" class="w-4 h-4"></i> พรีวิว & ส่งออก
+                        </button>
+                    </div>
+                </div>
+                <div class="grid grid-cols-7 gap-1 sm:gap-2 mb-2" id="calendar-days-header"></div>
+                <div class="grid grid-cols-7 gap-1 sm:gap-2" id="calendar-grid"></div>
+            </div>
+        </div>
+
+        <!-- ADMIN HISTORY SECTION -->
+        <div id="admin-history-section" class="hidden fade-in bg-white rounded-[1.5rem] shadow-sm border border-slate-100 p-4 sm:p-6 mt-8">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+                <div class="flex items-center gap-2">
+                    <div class="p-2 bg-indigo-50 text-indigo-600 rounded-lg">
+                        <i data-lucide="database" class="w-5 h-5"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-slate-800 text-lg">ประวัติและรายการทั้งหมด</h3>
+                        <p class="text-xs text-slate-500">จัดการข้อมูล แก้ไข หรือลบรายการกิจกรรม</p>
+                    </div>
+                </div>
+                <div class="w-full sm:w-auto relative">
+                    <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"></i>
+                    <input type="text" id="history-search" oninput="renderAdminHistory()" placeholder="ค้นหากิจกรรม..." class="pl-10 pr-4 py-2 w-full sm:w-64 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20">
+                </div>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-sm border-collapse">
+                    <thead class="bg-slate-50 text-slate-500 font-bold border-b border-slate-100">
+                        <tr>
+                            <th class="px-4 py-3 font-semibold">วันที่</th>
+                            <th class="px-4 py-3 font-semibold">หัวข้อ</th>
+                            <th class="px-4 py-3 font-semibold">เวลา</th>
+                            <th class="px-4 py-3 font-semibold text-center">จัดการ</th>
+                        </tr>
+                    </thead>
+                    <tbody id="history-table-body" class="divide-y divide-slate-50"></tbody>
+                </table>
+            </div>
         </div>
     </div>
 
-    <!-- Event Details & Admin Add Modal -->
-    <div id="details-modal" class="fixed inset-0 z-50 items-center justify-center p-3 sm:p-4 bg-slate-900/40 backdrop-blur-sm hidden">
+    <!-- Details Modal -->
+    <div id="details-modal" class="fixed inset-0 z-[100] items-center justify-center p-3 sm:p-4 bg-slate-900/40 backdrop-blur-sm hidden">
         <div class="bg-white rounded-[1.5rem] shadow-2xl w-full max-w-md max-h-[90vh] flex flex-col overflow-hidden fade-in">
             <div class="flex justify-between items-start p-5 sm:px-6 pt-6 pb-4 border-b border-slate-100">
                 <div>
@@ -142,28 +193,29 @@
                     <div id="modal-events-list" class="space-y-2.5"></div>
                 </div>
 
-                <!-- Admin Add Form -->
+                <!-- Admin Add/Edit Form -->
                 <div id="admin-form-container" class="w-full bg-slate-50/50 p-4 sm:p-5 rounded-xl border border-slate-100 hidden">
-                    <h4 class="text-sm font-semibold text-slate-800 flex items-center gap-1.5 mb-3">
+                    <h4 id="admin-form-title" class="text-sm font-semibold text-slate-800 flex items-center gap-1.5 mb-3">
                         <i data-lucide="plus" class="w-4 h-4 text-indigo-500"></i> เพิ่มนัดหมายใหม่
                     </h4>
                     <form id="add-event-form" class="space-y-3">
+                        <input type="hidden" id="ev-id" value="">
                         <div>
                             <label class="block text-[10px] sm:text-xs font-medium text-slate-500 mb-1">หัวข้อกิจกรรม *</label>
-                            <input type="text" id="ev-title" required class="w-full px-2.5 py-1.5 bg-white border border-slate-200 rounded-md text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500" placeholder="เช่น ประชุมทีม">
+                            <input type="text" id="ev-title" required class="w-full px-2.5 py-1.5 bg-white border border-slate-200 rounded-md text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500">
                         </div>
                         <div class="flex gap-2">
                             <div class="flex-1">
                                 <label class="block text-[10px] sm:text-xs font-medium text-slate-500 mb-1">เวลา</label>
-                                <input type="time" id="ev-time" value="09:00" class="w-full px-2.5 py-1.5 bg-white border border-slate-200 rounded-md text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500">
+                                <input type="time" id="ev-time" value="09:00" class="w-full px-2.5 py-1.5 bg-white border border-slate-200 rounded-md text-xs sm:text-sm">
                             </div>
                             <div class="flex-1">
-                                <label class="block text-[10px] sm:text-xs font-medium text-slate-500 mb-1">ถึงวันที่ (ไม่บังคับ)</label>
-                                <input type="date" id="ev-enddate" class="w-full px-2.5 py-1.5 bg-white border border-slate-200 rounded-md text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500">
+                                <label class="block text-[10px] sm:text-xs font-medium text-slate-500 mb-1">ถึงวันที่</label>
+                                <input type="date" id="ev-enddate" class="w-full px-2.5 py-1.5 bg-white border border-slate-200 rounded-md text-xs sm:text-sm">
                             </div>
-                            <div class="w-[65px] shrink-0">
-                                <label class="block text-[10px] sm:text-xs font-medium text-slate-500 mb-1 flex items-center gap-1"><i data-lucide="tag" class="w-3 h-3"></i> สี</label>
-                                <select id="ev-color" class="w-full px-1.5 py-1.5 bg-white border border-slate-200 rounded-md text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500">
+                            <div class="w-[70px]">
+                                <label class="block text-[10px] sm:text-xs font-medium text-slate-500 mb-1 tracking-tighter">สี</label>
+                                <select id="ev-color" class="w-full px-1 py-1.5 bg-white border border-slate-200 rounded-md text-xs sm:text-sm">
                                     <option value="blue">น้ำเงิน</option>
                                     <option value="green">เขียว</option>
                                     <option value="orange">ส้ม</option>
@@ -172,90 +224,81 @@
                                 </select>
                             </div>
                         </div>
-                        <div>
-                            <label class="block text-[10px] sm:text-xs font-medium text-slate-500 mb-1 flex items-center gap-1"><i data-lucide="link" class="w-3 h-3"></i> ลิงก์แนบ (เลือกได้)</label>
-                            <input type="url" id="ev-link" class="w-full px-2.5 py-1.5 bg-white border border-slate-200 rounded-md text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500" placeholder="https://...">
+
+                        <!-- Multi-Links Support -->
+                        <div class="space-y-2">
+                            <div class="flex justify-between items-center">
+                                <label class="block text-[10px] sm:text-xs font-bold text-indigo-600">จัดการปุ่มกด/ลิงก์</label>
+                                <button type="button" onclick="addLinkFormRow()" class="px-2 py-1 bg-indigo-50 text-indigo-600 rounded text-[10px] font-bold flex items-center gap-1 hover:bg-indigo-100 transition-colors">
+                                    <i data-lucide="plus-circle" class="w-3 h-3"></i> เพิ่มลิงก์
+                                </button>
+                            </div>
+                            <div id="links-form-container" class="space-y-2 max-h-[150px] overflow-y-auto pr-1"></div>
                         </div>
+
                         <div>
                             <label class="block text-[10px] sm:text-xs font-medium text-slate-500 mb-1">รายละเอียดเพิ่มเติม</label>
-                            <textarea id="ev-desc" rows="2" class="w-full px-2.5 py-1.5 bg-white border border-slate-200 rounded-md text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 resize-none" placeholder="ระบุรายละเอียด..."></textarea>
+                            <textarea id="ev-desc" rows="2" class="w-full px-2.5 py-1.5 bg-white border border-slate-200 rounded-md text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 resize-none" placeholder="รายละเอียด..."></textarea>
                         </div>
-                        <button type="submit" class="w-full py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs sm:text-sm font-bold transition-all shadow-sm flex justify-center items-center gap-1.5 mt-2 disabled:opacity-50">
-                            <i data-lucide="plus" class="w-4 h-4"></i> บันทึกกิจกรรม
-                        </button>
+                        <div class="flex gap-2">
+                            <button type="button" id="cancel-edit-btn" onclick="resetForm()" class="hidden flex-1 py-2 bg-slate-200 hover:bg-slate-300 text-slate-600 rounded-lg text-xs sm:text-sm font-bold transition-all">
+                                ยกเลิก
+                            </button>
+                            <button type="submit" id="submit-btn" class="flex-[2] py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs sm:text-sm font-bold transition-all shadow-sm flex justify-center items-center gap-1.5">
+                                <i data-lucide="plus" class="w-4 h-4" id="submit-icon"></i> <span id="submit-text">บันทึกกิจกรรม</span>
+                            </button>
+                        </div>
                     </form>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Admin Auth Modal -->
-    <div id="auth-modal" class="fixed inset-0 z-[60] items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm hidden">
-        <div class="bg-white rounded-2xl shadow-xl w-full max-w-xs p-6 fade-in">
-            <div class="flex justify-center mb-4">
-                <div class="p-3 bg-indigo-50 text-indigo-600 rounded-full">
-                    <i data-lucide="lock" class="w-6 h-6"></i>
-                </div>
+    <!-- Admin Auth Modal (Z-Index: 110 - ต้องสูงกว่าหน้า Maintenance) -->
+    <div id="auth-modal" class="fixed inset-0 z-[110] items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm hidden">
+        <div class="bg-white rounded-2xl shadow-xl w-full max-w-xs p-6 fade-in text-center">
+            <div class="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i data-lucide="user-cog" class="w-6 h-6"></i>
             </div>
-            <h3 class="text-lg font-bold text-center text-slate-800 mb-2">เข้าสู่โหมดแอดมิน</h3>
-            <p class="text-xs text-center text-slate-500 mb-4">กรุณาใส่รหัสผ่านเพื่อจัดการตารางนัดหมาย</p>
-            <form id="auth-form" class="space-y-4">
-                <div>
-                    <input type="password" id="auth-password" class="w-full px-4 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-slate-50" placeholder="รหัสผ่าน" required>
-                    <p id="auth-error" class="text-xs text-red-500 mt-1.5 text-center hidden">รหัสผ่านไม่ถูกต้อง</p>
-                </div>
-                <div class="flex gap-2">
-                    <button type="button" onclick="closeAuthModal()" class="flex-1 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl text-sm font-semibold transition-colors">ยกเลิก</button>
+            <h3 class="text-lg font-bold text-slate-800 mb-4">เข้าสู่ระบบแอดมิน</h3>
+            <form id="auth-form" class="space-y-4 text-left">
+                <input type="password" id="auth-password" class="w-full px-4 py-2 border border-slate-200 rounded-xl text-sm bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-500/20" placeholder="รหัสผ่าน" required>
+                <p id="auth-error" class="text-xs text-red-500 hidden text-center">รหัสผ่านไม่ถูกต้อง</p>
+                <div class="flex gap-2 pt-2">
+                    <button type="button" onclick="closeAuthModal()" class="flex-1 py-2 bg-slate-100 text-slate-600 rounded-xl text-sm font-semibold transition-colors">ยกเลิก</button>
                     <button type="submit" class="flex-1 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-sm font-semibold transition-colors shadow-sm">ตกลง</button>
                 </div>
             </form>
         </div>
     </div>
 
-    <!-- PREVIEW MODAL (โชว์ "รูปภาพที่เรนเดอร์เสร็จแล้วจริงๆ" เท่านั้น) -->
-    <div id="preview-modal" class="fixed inset-0 z-[70] items-center justify-center p-4 bg-slate-900/80 backdrop-blur-sm hidden">
+    <!-- PREVIEW MODAL (Z-Index: 120) -->
+    <div id="preview-modal" class="fixed inset-0 z-[120] items-center justify-center p-4 bg-slate-900/80 backdrop-blur-sm hidden">
         <div class="bg-white rounded-2xl shadow-2xl w-full max-w-5xl max-h-[95vh] flex flex-col overflow-hidden fade-in">
-            
             <div class="flex justify-between items-center p-4 sm:px-6 border-b border-slate-100 shrink-0">
                 <h3 class="text-lg sm:text-xl font-bold text-slate-800 flex items-center gap-2">
-                    <i data-lucide="eye" class="text-indigo-500"></i> ตรวจสอบความถูกต้องก่อนดาวน์โหลด
+                    <i data-lucide="eye" class="text-indigo-500"></i> พรีวิวข้อมูลก่อนส่งออก
                 </h3>
-                <button onclick="closePreviewModal()" class="p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-600 rounded-full transition-colors">
-                    <i data-lucide="x"></i>
-                </button>
+                <button onclick="closePreviewModal()" class="p-2 text-slate-400 hover:bg-slate-100 rounded-full transition-colors"><i data-lucide="x"></i></button>
             </div>
-
-            <!-- พื้นที่แสดงรูปภาพที่ผ่านการเรนเดอร์และประมวลผลเสร็จสมบูรณ์แล้ว -->
             <div class="flex-1 overflow-auto bg-[#e2e8f0] p-4 sm:p-8 flex justify-center items-start">
                 <img id="generated-preview-image" src="" alt="Preview" class="max-w-full h-auto rounded-xl shadow-lg border border-slate-200">
             </div>
-
-            <!-- ปุ่มดาวน์โหลด ดึงเอา Data URL จากภาพบนหน้าจอไปเซฟตรงๆ เลย -->
             <div class="p-4 sm:px-6 border-t border-slate-100 bg-slate-50 flex flex-wrap justify-end gap-3 shrink-0">
-                <button onclick="closePreviewModal()" class="px-5 py-2.5 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 rounded-xl text-sm font-semibold transition-colors shadow-sm">
-                    แก้ไขข้อมูล
-                </button>
-                <button onclick="downloadFromPreview('image')" class="flex items-center gap-2 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-sm font-semibold transition-colors shadow-sm">
-                    <i data-lucide="download" class="w-4 h-4"></i> ดาวน์โหลดรูปภาพ (PNG)
-                </button>
-                <button onclick="downloadFromPreview('pdf')" class="flex items-center gap-2 px-5 py-2.5 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-sm font-semibold transition-colors shadow-sm">
-                    <i data-lucide="file-pdf" class="w-4 h-4"></i> ดาวน์โหลด PDF
-                </button>
+                <button onclick="closePreviewModal()" class="px-5 py-2.5 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 rounded-xl text-sm font-semibold shadow-sm transition-colors">กลับไปแก้ไข</button>
+                <button onclick="downloadFromPreview('image')" class="flex items-center gap-2 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-sm font-semibold shadow-sm transition-all"><i data-lucide="download" class="w-4 h-4"></i> ดาวน์โหลดรูป</button>
+                <button onclick="downloadFromPreview('pdf')" class="flex items-center gap-2 px-5 py-2.5 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-sm font-semibold shadow-sm transition-all"><i data-lucide="file-pdf" class="w-4 h-4"></i> ดาวน์โหลด PDF</button>
             </div>
         </div>
     </div>
 
-    <!-- 
-        HIDDEN RENDERER (อ้างอิงวิธีทำจากไฟล์ของคุณ)
-        ซ่อนไว้นอกหน้าจอแบบสมบูรณ์ เพื่อใช้เป็นกระดานสำหรับวาดภาพ 
-    -->
-    <div id="offscreenRenderer" style="position: fixed; top: 0; left: -2000vw; z-index: -9999; pointer-events: none; opacity: 0;"></div>
+    <!-- Hidden Renderer -->
+    <div id="offscreenRenderer" style="position: fixed; top: 0; left: -3000vw; z-index: -9999; pointer-events: none; opacity: 0;"></div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-analytics.js";
         import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, onSnapshot, addDoc, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, collection, onSnapshot, addDoc, deleteDoc, doc, updateDoc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyD1z-AufMcsNqnbm3uUjoniuhdmDksYHMY",
@@ -268,20 +311,19 @@
         };
 
         const app = initializeApp(firebaseConfig);
-        const analytics = getAnalytics(app);
         const auth = getAuth(app);
         const db = getFirestore(app);
 
         let user = null;
         let isAdmin = false;
+        let siteActive = true;
         let currentDate = new Date();
         let selectedDate = null;
         let events = [];
 
-        const engMonths = ["JANUARY", "FEBRUARY", "MARCH", "APRIL", "MAY", "JUNE", "JULY", "AUGUST", "SEPTEMBER", "OCTOBER", "NOVEMBER", "DECEMBER"];
         const thaiMonths = ["มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"];
+        const engMonths = ["JANUARY", "FEBRUARY", "MARCH", "APRIL", "MAY", "JUNE", "JULY", "AUGUST", "SEPTEMBER", "OCTOBER", "NOVEMBER", "DECEMBER"];
         const thaiDays = ["อา.", "จ.", "อ.", "พ.", "พฤ.", "ศ.", "ส."];
-
         const exportColors = {
             blue: { bg: '#818cf8', text: '#e0e7ff' },    
             green: { bg: '#34d399', text: '#d1fae5' },   
@@ -295,28 +337,21 @@
             return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
         };
 
-        const isDateInRange = (targetDate, startDate, endDate) => {
-            if (!endDate) return targetDate === startDate;
-            return targetDate >= startDate && targetDate <= endDate;
+        const isDateInRange = (target, start, end) => {
+            if (!end) return target === start;
+            return target >= start && target <= end;
         };
 
-        const isLinkLocked = (eventStartDate) => getTodayString() < eventStartDate;
-
-        const formatThaiDate = (dateString) => {
-            if (!dateString) return '';
-            const d = new Date(dateString);
+        const formatThaiDate = (str) => {
+            if (!str) return '';
+            const d = new Date(str);
             return `${d.getDate()} ${thaiMonths[d.getMonth()]} ${d.getFullYear() + 543}`;
         };
 
-        const escapeHTML = (str) => {
-            if (!str) return '';
-            return str.replace(/[&<>'"]/g, tag => ({
-                '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
-            }[tag] || tag));
-        };
+        const escapeHTML = (s) => (s || '').replace(/[&<>'"]/g, t => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[t] || t));
 
-        const getColorClasses = (color) => {
-            switch(color) {
+        const getColorClasses = (c) => {
+            switch(c) {
                 case 'red': return 'bg-red-50 text-red-700 border-red-200';
                 case 'green': return 'bg-emerald-50 text-emerald-700 border-emerald-200';
                 case 'purple': return 'bg-purple-50 text-purple-700 border-purple-200';
@@ -325,8 +360,8 @@
             }
         };
 
-        const getDotColor = (color) => {
-            switch(color) {
+        const getDotColor = (c) => {
+            switch(c) {
                 case 'red': return 'bg-red-400';
                 case 'green': return 'bg-emerald-400';
                 case 'purple': return 'bg-purple-400';
@@ -335,135 +370,100 @@
             }
         };
 
+        // UI Renders
         const renderDashboard = () => {
             const todayStr = getTodayString();
-            
-            const todayEvents = events.filter(e => isDateInRange(todayStr, e.date, e.endDate)).sort((a, b) => a.time.localeCompare(b.time));
-            const todayContainer = document.getElementById('today-events-container');
-            if (todayEvents.length === 0) {
-                todayContainer.innerHTML = `
-                    <div class="text-center py-6 bg-slate-50 rounded-xl border border-dashed border-slate-200 flex flex-col items-center justify-center h-full">
-                        <p class="text-xs text-slate-500">ว่าง! ไม่มีกิจกรรมในวันนี้</p>
-                    </div>`;
-            } else {
-                todayContainer.innerHTML = todayEvents.map(event => `
-                    <div class="p-3.5 rounded-xl border relative transition-all bg-opacity-30 ${getColorClasses(event.color)}">
-                        <div class="flex justify-between items-start mb-1.5">
-                            <div>
-                                <h5 class="font-bold text-sm pr-6">${escapeHTML(event.title)}</h5>
-                                ${event.endDate && event.endDate !== event.date ? `<p class="text-[10px] font-medium opacity-70 mt-0.5">ทำต่อเนื่องถึง ${formatThaiDate(event.endDate)}</p>` : ''}
-                            </div>
-                            <span class="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-white/60 shadow-sm border border-white/40 mt-1">${event.time}</span>
-                        </div>
-                        ${event.description ? `<p class="text-xs mt-2 opacity-80 whitespace-pre-wrap flex items-start gap-1.5"><i data-lucide="align-left" class="w-3 h-3 mt-0.5 shrink-0"></i> ${escapeHTML(event.description)}</p>` : ''}
-                        ${event.link ? `<a href="${escapeHTML(event.link)}" target="_blank" rel="noopener noreferrer" class="mt-2.5 inline-flex items-center gap-1 text-[11px] font-medium hover:underline bg-white/50 px-2.5 py-1 rounded-md transition-colors hover:bg-white/80"><i data-lucide="external-link" class="w-3 h-3"></i> เปิดลิงก์แนบ</a>` : ''}
-                    </div>
-                `).join('');
-            }
+            const todayEvents = events.filter(e => isDateInRange(todayStr, e.date, e.endDate)).sort((a,b) => a.time.localeCompare(b.time));
+            const upcomingEvents = events.filter(e => e.date > todayStr).sort((a,b) => a.date.localeCompare(b.date) || a.time.localeCompare(b.time));
 
-            const upcomingEvents = events.filter(e => e.date > todayStr).sort((a, b) => a.date.localeCompare(b.date) || a.time.localeCompare(b.time));
-            const upcomingContainer = document.getElementById('upcoming-events-container');
-            if (upcomingEvents.length === 0) {
-                upcomingContainer.innerHTML = `<div class="flex h-full items-center justify-center"><p class="text-xs text-slate-500">ไม่มีกิจกรรมล่วงหน้าในขณะนี้</p></div>`;
-            } else {
-                upcomingContainer.innerHTML = upcomingEvents.map(event => `
-                    <div onclick="openDayDetails('${event.date}')" class="p-3 rounded-xl border cursor-pointer hover:shadow-sm transition-all bg-opacity-20 flex justify-between items-center ${getColorClasses(event.color)}">
-                        <div class="flex flex-col">
-                            <span class="text-[10px] font-semibold opacity-70 mb-0.5">
-                                ${formatThaiDate(event.date)} ${event.endDate && event.endDate !== event.date ? `- ${formatThaiDate(event.endDate)}` : ''}
-                            </span>
-                            <span class="font-bold text-sm">${escapeHTML(event.title)}</span>
-                        </div>
-                        <span class="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-white/60 shadow-sm border border-white/40">${event.time}</span>
-                    </div>
+            const containerToday = document.getElementById('today-events-container');
+            const containerUpcoming = document.getElementById('upcoming-events-container');
+
+            const eventToHtml = (e, showFullDate = false) => {
+                const links = (e.links || []).sort((a,b) => (parseInt(a.order) || 0) - (parseInt(b.order) || 0));
+                const linksHtml = links.map(l => `
+                    <a href="${escapeHTML(l.url)}" target="_blank" class="px-2 py-0.5 bg-white/60 hover:bg-white text-[9px] font-bold rounded border border-white/40 flex items-center gap-1 transition-all shadow-sm">
+                        <i data-lucide="external-link" class="w-2 h-2"></i> ${escapeHTML(l.label || 'เปิดลิงก์')}
+                    </a>
                 `).join('');
-            }
-            
+                return `
+                    <div class="p-3 rounded-xl border relative transition-all bg-opacity-30 ${getColorClasses(e.color)}">
+                        <div class="flex justify-between items-start mb-1">
+                            <div class="flex-1 pr-4">
+                                ${showFullDate ? `<p class="text-[8px] font-semibold opacity-70 mb-0.5">${formatThaiDate(e.date)}</p>` : ''}
+                                <h5 class="font-bold text-[11px] leading-tight">${escapeHTML(e.title)}</h5>
+                            </div>
+                            <span class="text-[9px] font-semibold px-1.5 py-0.5 rounded bg-white/60 border border-white/40 shadow-sm">${e.time}</span>
+                        </div>
+                        ${e.description ? `<p class="text-[10px] mt-1 opacity-80 whitespace-pre-wrap line-clamp-2">${escapeHTML(e.description)}</p>` : ''}
+                        <div class="flex flex-wrap gap-1 mt-2">${linksHtml}</div>
+                    </div>
+                `;
+            };
+
+            containerToday.innerHTML = todayEvents.length ? todayEvents.map(e => eventToHtml(e)).join('') : `<div class="text-center py-4 bg-slate-50/50 border border-dashed border-slate-200 rounded-xl text-slate-400 text-[10px]">ไม่มีกิจกรรมวันนี้</div>`;
+            containerUpcoming.innerHTML = upcomingEvents.length ? upcomingEvents.map(e => eventToHtml(e, true)).join('') : `<div class="text-center py-4 text-slate-400 text-[10px]">ไม่มีกิจกรรมล่วงหน้า</div>`;
             if(window.lucide) window.lucide.createIcons();
         };
 
         const renderCalendar = () => {
-            const year = currentDate.getFullYear();
-            const month = currentDate.getMonth();
-            const daysInMonth = new Date(year, month + 1, 0).getDate();
-            const firstDay = new Date(year, month, 1).getDay();
-            const todayString = getTodayString();
+            const year = currentDate.getFullYear(), month = currentDate.getMonth();
+            const dim = new Date(year, month + 1, 0).getDate(), start = new Date(year, month, 1).getDay();
+            const todayStr = getTodayString();
 
             document.getElementById('calendar-month-year').innerText = `${thaiMonths[month]} ${year + 543}`;
-            
             const headerHtml = thaiDays.map(d => `<div class="py-1 text-center text-[10px] sm:text-xs font-bold text-slate-400">${d}</div>`).join('');
             document.getElementById('calendar-days-header').innerHTML = headerHtml;
 
-            let gridHtml = '';
-            for (let i = 0; i < firstDay; i++) {
-                gridHtml += `<div class="aspect-square"></div>`;
-            }
-
-            for (let d = 1; d <= daysInMonth; d++) {
-                const dayString = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
-                const isToday = dayString === todayString;
-                const dayEvents = events.filter(e => isDateInRange(dayString, e.date, e.endDate));
-                
-                let dotHtml = '';
-                if (dayEvents.length > 0) {
-                    const dots = dayEvents.slice(0, 3).map(e => `<span class="w-1 h-1 sm:w-1.5 sm:h-1.5 rounded-full ${getDotColor(e.color)}"></span>`).join('');
-                    const extraDot = dayEvents.length > 3 ? `<span class="w-1 h-1 sm:w-1.5 sm:h-1.5 rounded-full bg-slate-300"></span>` : '';
-                    dotHtml = `<div class="absolute bottom-1.5 sm:bottom-2 flex gap-0.5 sm:gap-1 items-center justify-center">${dots}${extraDot}</div>`;
+            let grid = '';
+            for (let i = 0; i < start; i++) grid += `<div></div>`;
+            for (let d = 1; d <= dim; d++) {
+                const dayStr = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+                const isToday = dayStr === todayStr;
+                const dayEvs = events.filter(e => isDateInRange(dayStr, e.date, e.endDate));
+                let dots = '';
+                if(dayEvs.length) {
+                    dots = `<div class="absolute bottom-1.5 flex gap-0.5">${dayEvs.slice(0,3).map(e => `<span class="w-1 h-1 sm:w-1.5 sm:h-1.5 rounded-full ${getDotColor(e.color)}"></span>`).join('')}</div>`;
                 }
-
-                const baseClass = isToday 
-                    ? 'border-indigo-500 bg-indigo-50 text-indigo-700' 
-                    : 'border-transparent hover:border-slate-100 hover:bg-slate-50 text-slate-700';
-
-                gridHtml += `
-                    <button onclick="openDayDetails('${dayString}')" class="relative aspect-square flex flex-col items-center justify-center rounded-full transition-all border-2 ${baseClass}">
-                        <span class="text-sm sm:text-base font-medium ${dayEvents.length > 0 ? 'text-slate-900' : ''}">${d}</span>
-                        ${dotHtml}
-                    </button>
-                `;
+                const cls = isToday ? 'border-indigo-500 bg-indigo-50 text-indigo-700 shadow-sm' : 'border-transparent hover:border-slate-100 hover:bg-slate-50 text-slate-700';
+                grid += `<button onclick="openDayDetails('${dayStr}')" class="relative aspect-square flex flex-col items-center justify-center rounded-full transition-all border-2 ${cls}"><span class="text-xs sm:text-sm font-medium">${d}</span>${dots}</button>`;
             }
-            document.getElementById('calendar-grid').innerHTML = gridHtml;
+            document.getElementById('calendar-grid').innerHTML = grid;
             if(window.lucide) window.lucide.createIcons();
         };
 
         const renderModalDetails = () => {
             if (!selectedDate) return;
-            const dateObj = new Date(selectedDate);
-            document.getElementById('modal-date-title').innerText = `${dateObj.getDate()} ${thaiMonths[dateObj.getMonth()]} ${dateObj.getFullYear() + 543}`;
-            
-            const selectedEvents = events.filter(e => isDateInRange(selectedDate, e.date, e.endDate)).sort((a, b) => a.time.localeCompare(b.time));
-            document.getElementById('modal-date-subtitle').innerText = selectedEvents.length > 0 ? `มีกิจกรรมทั้งหมด ${selectedEvents.length} รายการ` : 'ไม่มีกิจกรรมในวันนี้';
+            document.getElementById('modal-date-title').innerText = formatThaiDate(selectedDate);
+            const selEvs = events.filter(e => isDateInRange(selectedDate, e.date, e.endDate)).sort((a,b) => a.time.localeCompare(b.time));
+            document.getElementById('modal-date-subtitle').innerText = selEvs.length ? `พบ ${selEvs.length} รายการ` : 'ไม่มีกิจกรรมในวันนี้';
 
-            const listContainer = document.getElementById('modal-events-list');
-            if (selectedEvents.length === 0) {
-                listContainer.innerHTML = `
-                    <div class="text-center py-8 bg-slate-50 border border-slate-100 border-dashed rounded-xl">
-                        <i data-lucide="calendar" class="w-8 h-8 mx-auto text-slate-300 mb-2"></i>
-                        <p class="text-slate-500 text-xs">ว่าง! ไม่มีนัดหมาย</p>
-                    </div>`;
+            const container = document.getElementById('modal-events-list');
+            if(!selEvs.length) {
+                container.innerHTML = `<div class="text-center py-10 bg-slate-50 rounded-xl border border-dashed border-slate-200"><p class="text-slate-400 text-xs">ว่าง! ไม่มีนัดหมาย</p></div>`;
             } else {
-                listContainer.innerHTML = selectedEvents.map(event => {
-                    const locked = isLinkLocked(event.date);
-                    const linkHtml = event.link ? (
-                        locked 
-                        ? `<span class="mt-2.5 inline-flex items-center gap-1 text-[11px] font-medium text-slate-400 bg-slate-100/60 px-2.5 py-1 rounded-md cursor-not-allowed border border-slate-200"><i data-lucide="lock" class="w-3 h-3"></i> ลิงก์จะเปิดในวันกิจกรรม</span>`
-                        : `<a href="${escapeHTML(event.link)}" target="_blank" rel="noopener noreferrer" class="mt-2.5 inline-flex items-center gap-1 text-[11px] font-medium hover:underline bg-white/50 px-2.5 py-1 rounded-md transition-colors hover:bg-white/80"><i data-lucide="external-link" class="w-3 h-3"></i> เปิดลิงก์แนบ</a>`
-                    ) : '';
-
-                    const delBtn = isAdmin ? `<button onclick="handleDeleteEvent('${event.id}')" class="absolute top-3 right-3 p-1.5 text-red-400 hover:bg-red-100 hover:text-red-600 rounded-md opacity-0 group-hover:opacity-100 transition-all" title="ลบกิจกรรม"><i data-lucide="trash-2" class="w-4 h-4"></i></button>` : '';
-
+                container.innerHTML = selEvs.map(e => {
+                    const sortedLinks = (e.links || []).sort((a,b) => (parseInt(a.order) || 0) - (parseInt(b.order) || 0));
+                    const linksHtml = sortedLinks.map(l => `
+                        <a href="${escapeHTML(l.url)}" target="_blank" class="px-3 py-1.5 bg-white/70 text-[10px] font-bold rounded-lg border border-white/50 flex items-center gap-1.5 shadow-sm transition-all hover:bg-white">
+                            <i data-lucide="external-link" class="w-3.5 h-3.5"></i> ${escapeHTML(l.label || 'ลิงก์')}
+                        </a>
+                    `).join('');
+                    const adminActions = isAdmin ? `
+                        <div class="flex justify-end gap-2 mt-4 pt-3 border-t border-slate-200/40">
+                            <button onclick="handleEditEvent('${e.id}')" class="px-3 py-1.5 bg-indigo-50 text-indigo-600 rounded-lg text-[10px] font-bold flex items-center gap-1 hover:bg-indigo-100"><i data-lucide="edit-3" class="w-3.5 h-3.5"></i> แก้ไข</button>
+                            <button onclick="handleDeleteEvent('${e.id}')" class="px-3 py-1.5 bg-red-50 text-red-600 rounded-lg text-[10px] font-bold flex items-center gap-1 transition-all hover:bg-red-100"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i> ลบ</button>
+                        </div>
+                    ` : '';
                     return `
-                        <div class="p-3.5 rounded-xl border relative group transition-all bg-opacity-30 ${getColorClasses(event.color)}">
-                            <div class="flex justify-between items-start mb-1.5">
-                                <div>
-                                    <h5 class="font-bold text-sm pr-6">${escapeHTML(event.title)}</h5>
-                                    ${event.endDate && event.endDate !== event.date ? `<p class="text-[10px] font-medium opacity-70 mt-0.5">ทำต่อเนื่องถึง ${formatThaiDate(event.endDate)}</p>` : ''}
-                                </div>
-                                <span class="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-white/60 shadow-sm border border-white/40 mt-1">${event.time}</span>
+                        <div class="p-4 rounded-2xl border relative bg-opacity-30 ${getColorClasses(e.color)}">
+                            <div class="flex justify-between items-start mb-3">
+                                <h5 class="font-bold text-sm leading-tight pr-6">${escapeHTML(e.title)}</h5>
+                                <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-white/60 border border-white/40 shadow-sm">${e.time} น.</span>
                             </div>
-                            ${event.description ? `<p class="text-xs mt-2 opacity-80 whitespace-pre-wrap flex items-start gap-1.5"><i data-lucide="align-left" class="w-3 h-3 mt-0.5 shrink-0"></i> ${escapeHTML(event.description)}</p>` : ''}
-                            ${linkHtml}
-                            ${delBtn}
+                            ${e.description ? `<p class="text-[11px] opacity-80 whitespace-pre-wrap mb-4">${escapeHTML(e.description)}</p>` : ''}
+                            <div class="flex flex-wrap gap-2">${linksHtml}</div>
+                            ${adminActions}
                         </div>
                     `;
                 }).join('');
@@ -471,402 +471,379 @@
             if(window.lucide) window.lucide.createIcons();
         };
 
-        const updateAdminUI = () => {
-            const btn = document.getElementById('admin-toggle-btn');
-            const icon = document.getElementById('admin-lock-icon');
-            const form = document.getElementById('admin-form-container');
-            const exportBtns = document.getElementById('admin-export-buttons');
+        const renderAdminHistory = () => {
+            if (!isAdmin) return;
+            const q = (document.getElementById('history-search')?.value || '').toLowerCase();
+            const filtered = events.filter(e => e.title.toLowerCase().includes(q) || (e.description||'').toLowerCase().includes(q))
+                                  .sort((a,b) => b.date.localeCompare(a.date));
             
-            if (isAdmin) {
-                btn.className = "absolute top-4 right-4 sm:top-6 sm:right-6 p-2 rounded-full transition-all z-10 bg-indigo-600 text-white shadow-md border border-indigo-500";
-                icon.setAttribute('data-lucide', 'unlock');
-                btn.title = "ออกจากโหมดแอดมิน";
-                form.classList.remove('hidden');
-                exportBtns.classList.remove('hidden');
-            } else {
-                btn.className = "absolute top-4 right-4 sm:top-6 sm:right-6 p-2 rounded-full transition-all z-10 text-slate-300 hover:text-slate-500 hover:bg-white hover:shadow-sm";
-                icon.setAttribute('data-lucide', 'lock');
-                btn.title = "เข้าสู่โหมดแอดมิน";
-                form.classList.add('hidden');
-                exportBtns.classList.add('hidden');
+            const tbody = document.getElementById('history-table-body');
+            if(tbody) {
+                tbody.innerHTML = filtered.map(e => `
+                    <tr class="hover:bg-slate-50/50 transition-colors">
+                        <td class="px-4 py-3 text-[11px] font-medium text-slate-500">${e.date.split('-').reverse().join('/')}</td>
+                        <td class="px-4 py-3 font-semibold text-slate-700">${escapeHTML(e.title)}</td>
+                        <td class="px-4 py-3 text-[11px] text-slate-500">${e.time} น.</td>
+                        <td class="px-4 py-3 text-center">
+                            <div class="flex justify-center gap-1">
+                                <button onclick="handleEditEvent('${e.id}')" class="p-1.5 text-indigo-500 hover:bg-indigo-50 rounded-md"><i data-lucide="edit-3" class="w-4 h-4"></i></button>
+                                <button onclick="handleDeleteEvent('${e.id}')" class="p-1.5 text-red-400 hover:bg-red-50 rounded-md"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                            </div>
+                        </td>
+                    </tr>
+                `).join('');
             }
             if(window.lucide) window.lucide.createIcons();
-            renderModalDetails(); 
         };
 
-        // --------------------------------------------------------
-        // ระบบประมวลผลรูปภาพ (ใช้วิธีสร้าง HTML แท้ๆ และเรนเดอร์ด้วย html-to-image)
-        // เพื่อลบปัญหาการเลื่อน/เพี้ยน ของอักษร อย่างสมบูรณ์
-        // --------------------------------------------------------
-        window.cachedExportDataURL = null; // ตัวแปรเก็บภาพที่สร้างเสร็จแล้ว
-
-        const generateExportHTML = () => {
-            const year = currentDate.getFullYear();
-            const month = currentDate.getMonth();
-            const daysInMonth = new Date(year, month + 1, 0).getDate();
-            const firstDay = new Date(year, month, 1).getDay();
-            
-            const startStr = `${year}-${String(month+1).padStart(2,'0')}-01`;
-            const endStr = `${year}-${String(month+1).padStart(2,'0')}-${String(daysInMonth).padStart(2,'0')}`;
-            
-            const monthEvents = events.filter(e => {
-                const eStart = e.date;
-                const eEnd = e.endDate || e.date;
-                return (eStart <= endStr && eEnd >= startStr); 
-            }).sort((a, b) => a.date.localeCompare(b.date) || a.time.localeCompare(b.time));
-
-            // จัดกลุ่มกิจกรรม
-            const groupedEvents = {};
-            monthEvents.forEach(ev => {
-                if (!groupedEvents[ev.title]) {
-                    groupedEvents[ev.title] = { color: ev.color, items: [] };
-                }
-                groupedEvents[ev.title].items.push(ev);
-            });
-
-            // ฝั่งขวา: รายละเอียดกิจกรรม
-            let eventsHtml = '';
-            if (Object.keys(groupedEvents).length === 0) {
-                eventsHtml = `<div style="width: 100%; text-align: center; color: #9ca3af; font-size: 24px; font-weight: 500; margin-top: 150px;">ไม่มีกิจกรรมในเดือนนี้</div>`;
-            } else {
-                for (const [title, group] of Object.entries(groupedEvents)) {
-                    const c = exportColors[group.color] || exportColors.blue;
-                    
-                    eventsHtml += `
-                    <div style="margin-bottom: 20px; page-break-inside: avoid;">
-                        <div style="display: inline-block; background-color: ${c.bg}; color: white; border-radius: 999px; padding: 10px 24px; font-size: 24px; font-weight: 700; margin-bottom: 15px; line-height: 1; white-space: nowrap;">
-                            ${escapeHTML(title)}
-                        </div>
-                    `;
-                    
-                    group.items.forEach(ev => {
-                        let startDayNum = parseInt(ev.date.split('-')[2]);
-                        let dateCapsule = `${startDayNum}`;
-                        if(ev.endDate && ev.endDate !== ev.date) {
-                            let endDayNum = parseInt(ev.endDate.split('-')[2]);
-                            dateCapsule = `${startDayNum}-${endDayNum}`;
-                        }
-
-                        eventsHtml += `
-                        <div style="display: flex; gap: 15px; margin-bottom: 12px; align-items: flex-start;">
-                            <div style="background-color: ${c.bg}; color: white; border-radius: 999px; padding: 6px 16px; font-size: 20px; font-weight: 800; line-height: 1; flex-shrink: 0; min-width: 45px; text-align: center;">
-                                ${dateCapsule}
-                            </div>
-                            <div style="color: #64748b; font-size: 20px; font-weight: 600; line-height: 1.3; padding-top: 2px;">
-                                ${ev.description ? escapeHTML(ev.description) : 'ไม่มีรายละเอียดเพิ่มเติม'}
-                            </div>
-                        </div>`;
-                    });
-                    eventsHtml += `</div>`;
-                }
-            }
-
-            // ฝั่งซ้าย: ปฏิทิน
-            let gridHtml = '';
-            for (let i = 0; i < firstDay; i++) {
-                gridHtml += `<div></div>`;
-            }
-
-            for (let d = 1; d <= daysInMonth; d++) {
-                const dayStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
-                const dayEvents = monthEvents.filter(e => isDateInRange(dayStr, e.date, e.endDate));
-                
-                let bgStyle = '';
-                let textStyle = `color: #9ca3af;`;
-                
-                if (dayEvents.length > 0) {
-                    const ev = dayEvents[0]; 
-                    const c = exportColors[ev.color] || exportColors.blue;
-                    const isStart = dayStr === ev.date;
-                    const isEnd = !ev.endDate || dayStr === ev.endDate;
-                    
-                    let borderRadius = '0';
-                    if (isStart && isEnd) {
-                        bgStyle = `background-color: ${c.bg}; border-radius: 999px; width: 42px; margin: 0 auto;`;
-                    } else {
-                        if (isStart) borderRadius = '999px 0 0 999px';
-                        else if (isEnd) borderRadius = '0 999px 999px 0';
-                        bgStyle = `background-color: ${c.bg}; border-radius: ${borderRadius}; width: 100%;`;
-                    }
-                    textStyle = `color: white;`;
-                }
-
-                gridHtml += `
-                <div style="display: flex; justify-content: center; align-items: center; height: 100%; position: relative; z-index: 10;">
-                    <div style="height: 42px; display: flex; justify-content: center; align-items: center; ${bgStyle}">
-                        <span style="font-weight: 800; font-size: 22px; line-height: 1; ${textStyle}">${d}</span>
-                    </div>
-                </div>`;
-            }
-            
-            const now = new Date();
-            const timeStr = `ข้อมูลเมื่อ ${now.getDate()}/${now.getMonth()+1}/${now.getFullYear()+543} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
-
-            // โครงสร้างหลักของ HTML ที่จะถูกแคปเจอร์
-            return `
-            <div id="capture-layout-wrapper" style="width: 1123px; height: 794px; background-color: #f8fafc; padding: 40px; display: flex; flex-direction: column; position: relative; font-family: 'Kanit', sans-serif; box-sizing: border-box;">
-                
-                <!-- บังคับโหลดฟอนต์ใน iframe renderer -->
-                <style>
-                    @import url('https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700;800;900&display=swap');
-                    * { font-family: 'Kanit', sans-serif !important; }
-                </style>
-
-                <!-- ส่วนหัว -->
-                <div style="display: flex; flex-direction: column; align-items: center; margin-bottom: 40px;">
-                    <div style="background-color: #4b5563; color: white; border-radius: 999px; padding: 12px 70px; margin-bottom: 10px; white-space: nowrap; display: inline-flex; justify-content: center; align-items: center;">
-                        <span style="font-size: 46px; font-weight: 800; line-height: 1; white-space: nowrap;">ตารางนัดหมาย</span>
-                    </div>
-                    <span style="color: #4b5563; font-size: 26px; font-weight: 600; line-height: 1; white-space: nowrap;">สำหรับเดือน${thaiMonths[month]} ${year + 543}</span>
-                </div>
-
-                <!-- ส่วนเนื้อหา -->
-                <div style="display: flex; gap: 40px; flex: 1;">
-                    
-                    <!-- ปฏิทินฝั่งซ้าย -->
-                    <div style="width: 440px; flex-shrink: 0; display: flex; flex-direction: column;">
-                        <div style="background-color: #9ca3af; border-radius: 999px; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; color: white; margin-bottom: 25px;">
-                            <span style="font-size: 28px; font-weight: 900; line-height: 1; text-transform: uppercase;">${engMonths[month]}</span>
-                            <span style="font-size: 28px; font-weight: 900; line-height: 1;">${year}</span>
-                        </div>
-                        
-                        <div style="display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; font-size: 24px; font-weight: 800; color: #9ca3af; margin-bottom: 15px; line-height: 1;">
-                            <div>S</div><div>M</div><div>T</div><div>W</div><div>T</div><div>F</div><div>S</div>
-                        </div>
-                        
-                        <div style="flex: 1; display: grid; grid-template-columns: repeat(7, 1fr); grid-auto-rows: 55px; text-align: center; position: relative;">
-                            <div style="position: absolute; top: -10px; bottom: 10px; left: calc(100% / 7); width: 2px; background-color: #cbd5e1; z-index: 1;"></div>
-                            <div style="position: absolute; top: -10px; bottom: 10px; right: calc(100% / 7); width: 2px; background-color: #cbd5e1; z-index: 1;"></div>
-                            ${gridHtml}
-                        </div>
-                    </div>
-
-                    <!-- กิจกรรมฝั่งขวา -->
-                    <div style="flex: 1; display: flex; flex-direction: column; overflow: hidden; border-left: 2px solid #e2e8f0; padding-left: 40px;">
-                        <div style="flex: 1; overflow: hidden;">
-                            ${eventsHtml}
-                        </div>
-                    </div>
-                </div>
-
-                <!-- เวลาที่อัปเดต -->
-                <div style="position: absolute; bottom: 30px; right: 40px; color: #94a3b8; font-size: 16px; font-weight: 500;">${timeStr}</div>
-            </div>
+        // Admin Helpers
+        window.addLinkFormRow = (data = { label: '', url: '', order: '' }) => {
+            const container = document.getElementById('links-form-container');
+            const row = document.createElement('div');
+            row.className = "link-form-row grid grid-cols-12 gap-2 bg-white p-2 rounded-lg border border-slate-100 shadow-sm mb-2 fade-in";
+            row.innerHTML = `
+                <div class="col-span-4"><input type="text" placeholder="ชื่อปุ่ม" value="${data.label}" class="link-label w-full px-2 py-1 text-[10px] border border-slate-100 rounded bg-slate-50 focus:bg-white outline-none"></div>
+                <div class="col-span-5"><input type="url" placeholder="URL..." value="${data.url}" class="link-url w-full px-2 py-1 text-[10px] border border-slate-100 rounded bg-slate-50 focus:bg-white outline-none"></div>
+                <div class="col-span-2"><input type="number" placeholder="ที่" value="${data.order}" class="link-order w-full px-1 py-1 text-[10px] border border-slate-100 rounded bg-slate-50 text-center outline-none"></div>
+                <div class="col-span-1 flex items-center justify-center"><button type="button" onclick="this.parentElement.parentElement.remove()" class="text-red-400 hover:text-red-600"><i data-lucide="minus-circle" class="w-4 h-4"></i></button></div>
             `;
+            container.appendChild(row);
+            if(window.lucide) window.lucide.createIcons();
         };
 
-        window.openPreviewModal = async () => {
-            const loadingEl = document.getElementById('loading');
-            const loadingText = document.getElementById('loading-text');
+        window.handleEditEvent = (id) => {
+            const e = events.find(item => item.id === id);
+            if (!e) return;
+            selectedDate = e.date;
+            document.getElementById('ev-id').value = e.id;
+            document.getElementById('ev-title').value = e.title;
+            document.getElementById('ev-time').value = e.time;
+            document.getElementById('ev-enddate').value = e.endDate || '';
+            document.getElementById('ev-color').value = e.color || 'blue';
+            document.getElementById('ev-desc').value = e.description || '';
             
-            loadingText.innerText = "กำลังสร้างรูปภาพตัวอย่าง (ใช้เวลาสักครู่)...";
-            loadingEl.classList.remove('hidden');
+            const container = document.getElementById('links-form-container');
+            container.innerHTML = '';
+            (e.links || []).forEach(l => addLinkFormRow(l));
+
+            const formTitle = document.getElementById('admin-form-title');
+            if(formTitle) formTitle.innerHTML = '<i data-lucide="edit-3" class="w-4 h-4 text-indigo-500"></i> แก้ไขข้อมูลนัดหมาย';
             
+            const subTxt = document.getElementById('submit-text'), subIc = document.getElementById('submit-icon');
+            if(subTxt) subTxt.innerText = 'อัปเดตข้อมูล';
+            if(subIc) subIc.setAttribute('data-lucide', 'save');
+            
+            document.getElementById('cancel-edit-btn').classList.remove('hidden');
+            document.getElementById('admin-form-container').classList.remove('hidden');
+            document.getElementById('admin-form-container').scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+            if(document.getElementById('details-modal').classList.contains('hidden')) {
+                openDayDetails(e.date);
+            }
+            if(window.lucide) window.lucide.createIcons();
+        };
+
+        window.resetForm = () => {
+            const form = document.getElementById('add-event-form');
+            if(form) form.reset();
+            document.getElementById('ev-id').value = '';
+            document.getElementById('links-form-container').innerHTML = '';
+            
+            const formTitle = document.getElementById('admin-form-title');
+            if(formTitle) formTitle.innerHTML = '<i data-lucide="plus" class="w-4 h-4 text-indigo-500"></i> เพิ่มนัดหมายใหม่';
+            
+            const subTxt = document.getElementById('submit-text'), subIc = document.getElementById('submit-icon');
+            if(subTxt) subTxt.innerText = 'บันทึกกิจกรรม';
+            if(subIc) subIc.setAttribute('data-lucide', 'plus');
+            
+            document.getElementById('cancel-edit-btn').classList.add('hidden');
+            if(window.lucide) window.lucide.createIcons();
+        };
+
+        const updateAdminUI = () => {
+            const btn = document.getElementById('admin-toggle-btn'), icon = document.getElementById('admin-lock-icon');
+            const form = document.getElementById('admin-form-container'), exp = document.getElementById('admin-export-buttons');
+            const hist = document.getElementById('admin-history-section'), ctrl = document.getElementById('site-control-panel');
+            const warn = document.getElementById('site-offline-warning');
+            
+            if (isAdmin) {
+                btn.className = "p-2 rounded-full bg-indigo-600 text-white shadow-md z-10 transition-all";
+                icon.setAttribute('data-lucide', 'unlock');
+                form.classList.remove('hidden'); exp.classList.remove('hidden'); hist.classList.remove('hidden'); ctrl.classList.remove('hidden');
+                if(!siteActive) warn.classList.remove('hidden');
+                renderAdminHistory();
+            } else {
+                btn.className = "p-2 rounded-full text-slate-300 hover:text-slate-500 hover:bg-white z-10 transition-all";
+                icon.setAttribute('data-lucide', 'lock');
+                form.classList.add('hidden'); exp.classList.add('hidden'); hist.classList.add('hidden'); ctrl.classList.add('hidden'); warn.classList.add('hidden');
+                resetForm();
+            }
+            if(window.lucide) window.lucide.createIcons();
+            renderModalDetails();
+            checkSiteVisibility();
+        };
+
+        const checkSiteVisibility = () => {
+            const screen = document.getElementById('maintenance-screen');
+            const content = document.getElementById('app-content');
+            if (!siteActive && !isAdmin) {
+                screen.classList.remove('hidden'); content.classList.add('hidden');
+            } else {
+                screen.classList.add('hidden'); content.classList.remove('hidden');
+            }
+        };
+
+        window.handleToggleSiteStatus = async () => {
+            if(!isAdmin) return;
+            const newStatus = !siteActive;
             try {
-                // รอให้ฟอนต์พร้อม 100%
+                await setDoc(doc(db, 'settings', 'site_config'), { is_active: newStatus });
+            } catch (e) { console.error(e); }
+        };
+
+        // Export Logic
+        window.openPreviewModal = async () => {
+            const loading = document.getElementById('loading');
+            document.getElementById('loading-text').innerText = "กำลังสร้างภาพพรีวิว...";
+            loading.classList.remove('hidden');
+            try {
                 await document.fonts.ready;
+                const renderer = document.getElementById('offscreenRenderer');
+                renderer.innerHTML = generateExportHTML();
+                const wrap = document.getElementById('capture-layout-wrapper');
+                void wrap.offsetWidth; 
+                await new Promise(r => setTimeout(r, 1200));
                 
-                // นำ HTML ที่จัดทรงมาใส่ไว้ในพื้นที่ที่เตรียมไว้ (ซ่อนอยู่นอกจอ)
-                const offscreenContainer = document.getElementById('offscreenRenderer');
-                offscreenContainer.innerHTML = generateExportHTML();
-
-                // การหน่วงเวลาให้เบราว์เซอร์ปรับโครงสร้าง CSS 
-                const cardToCapture = document.getElementById('capture-layout-wrapper');
-                void cardToCapture.offsetWidth; 
-                await new Promise(r => setTimeout(r, 800)); // เพิ่มเวลาให้ฟอนต์โหลดชัวร์ๆ
-                
-                // Warm-up รอบที่ 1
-                try { await htmlToImage.toPng(cardToCapture, { cacheBust: true, useCORS: true, pixelRatio: 1 }); } catch (e) {}
-                await new Promise(r => setTimeout(r, 400));
-
-                // ถ่ายจริงรอบสุดท้าย ความคมชัดสูงสุด x3
-                const dataUrl = await htmlToImage.toPng(cardToCapture, {
-                    quality: 1,
-                    pixelRatio: 3,
-                    cacheBust: true,
-                    useCORS: true,
-                    style: { transform: 'none', margin: '0' }
+                const dataUrl = await htmlToImage.toPng(wrap, {
+                    quality: 1, pixelRatio: 3, cacheBust: true, useCORS: true,
+                    filter: (node) => {
+                        if (node.tagName === 'LINK' || node.tagName === 'STYLE') {
+                            try { if (node.sheet && node.sheet.cssRules) return true; } catch (e) { return false; }
+                        }
+                        return true;
+                    }
                 });
-                
-                // เคลียร์พื้นที่วาดภาพ
-                offscreenContainer.innerHTML = '';
-                
-                // นำรูปที่ถ่ายเสร็จไปเก็บไว้และโชว์
                 window.cachedExportDataURL = dataUrl;
                 document.getElementById('generated-preview-image').src = dataUrl;
-                
-                // เปิดหน้าต่างพรีวิว
-                const previewModal = document.getElementById('preview-modal');
-                previewModal.classList.remove('hidden');
-                previewModal.classList.add('flex');
+                document.getElementById('preview-modal').classList.remove('hidden');
+                document.getElementById('preview-modal').classList.add('flex');
+            } catch (e) { alert("ล้มเหลว: " + e.message); } finally { loading.classList.add('hidden'); }
+        };
 
-            } catch (error) {
-                console.error("Preview error:", error);
-                document.getElementById('offscreenRenderer').innerHTML = ''; 
-                alert("เกิดข้อผิดพลาดในการสร้างภาพตัวอย่าง");
-            } finally {
-                loadingEl.classList.add('hidden');
-                loadingText.innerText = "กำลังโหลดข้อมูล...";
+        const generateExportHTML = () => {
+            const y = currentDate.getFullYear(), m = currentDate.getMonth();
+            const dim = new Date(y, m+1, 0).getDate(), start = new Date(y, m, 1).getDay();
+            let grid = '';
+            for (let i = 0; i < start; i++) grid += '<div></div>';
+            for (let d = 1; d <= dim; d++) {
+                const ds = `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+                const evs = events.filter(e => isDateInRange(ds, e.date, e.endDate));
+                let bg = '', txt = 'color: #9ca3af;';
+                if(evs.length) {
+                    bg = `background-color: ${exportColors[evs[0].color].bg}; border-radius: 999px; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;`;
+                    txt = 'color: white; font-weight: 800;';
+                }
+                grid += `<div style="display: flex; justify-content: center; align-items: center; height: 50px;"><div style="${bg}"><span style="${txt} font-size: 20px;">${d}</span></div></div>`;
             }
+            const activeEvs = events.filter(e => e.date.startsWith(`${y}-${String(m+1).padStart(2,'0')}`)).sort((a,b) => a.date.localeCompare(b.date));
+            const listHtml = activeEvs.map(e => `
+                <div style="margin-bottom: 15px; border-left: 5px solid ${exportColors[e.color].bg}; padding-left: 15px; page-break-inside: avoid;">
+                    <div style="font-weight: 800; font-size: 20px; color: #1e293b;">${escapeHTML(e.title)}</div>
+                    <div style="font-size: 16px; color: #64748b;">${e.date.split('-').reverse().join('/')} - ${e.time} น.</div>
+                </div>
+            `).join('');
+
+            return `
+            <div id="capture-layout-wrapper" style="width: 1123px; height: 794px; background-color: #f8fafc; padding: 40px; font-family: 'Kanit', sans-serif; display: flex; flex-direction: column;">
+                <style>@import url('https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700;800;900&display=swap'); * { font-family: 'Kanit', sans-serif !important; }</style>
+                <div style="display: flex; flex-direction: column; align-items: center; margin-bottom: 40px;">
+                    <div class="preview-title-capsule" style="background-color: #4b5563; color: white; border-radius: 999px; padding: 12px 70px; margin-bottom: 10px;">
+                        <span style="font-size: 46px; font-weight: 800; line-height: 1;">ตารางนัดหมาย</span>
+                    </div>
+                    <span style="font-size: 26px; font-weight: 600; color: #4b5563;">เดือน${thaiMonths[m]} ${y + 543}</span>
+                </div>
+                <div style="display: flex; gap: 50px; flex: 1; overflow: hidden;">
+                    <div style="width: 480px; flex-shrink: 0; background: white; padding: 25px; border-radius: 35px; border: 1px solid #e2e8f0; display: flex; flex-direction: column;">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 25px; background: #94a3b8; padding: 15px 30px; border-radius: 20px; color: white; font-weight: 900; font-size: 24px;">
+                            <span>${engMonths[m]}</span><span>${y}</span>
+                        </div>
+                        <div style="display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; font-size: 20px; font-weight: 800; color: #cbd5e1; margin-bottom: 15px;">
+                            <div>S</div><div>M</div><div>T</div><div>W</div><div>T</div><div>F</div><div>S</div>
+                        </div>
+                        <div style="display: grid; grid-template-columns: repeat(7, 1fr); flex: 1;">${grid}</div>
+                    </div>
+                    <div style="flex: 1; overflow: hidden; padding-right: 15px;">
+                        <h3 style="font-size: 24px; font-weight: 800; color: #1e293b; margin-bottom: 25px; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px;">ตารางกิจกรรม</h3>
+                        ${listHtml || '<div style="color: #94a3b8;">ไม่มีรายการ</div>'}
+                    </div>
+                </div>
+            </div>`;
         };
 
-        window.closePreviewModal = () => {
-            const previewModal = document.getElementById('preview-modal');
-            previewModal.classList.add('hidden');
-            previewModal.classList.remove('flex');
-        };
+        // Site Status Toggle UI
+        const updateSiteStatusUI = () => {
+            const btn = document.getElementById('site-status-toggle');
+            const warn = document.getElementById('site-offline-warning');
+            if(!btn) return;
 
-        // --------------------------------------------------------
-        // ฟังก์ชันดาวน์โหลด: โหลดรูปที่โชว์อยู่ไปเลย
-        // --------------------------------------------------------
-        window.downloadFromPreview = (type) => {
-            if (!window.cachedExportDataURL) return alert("ไม่พบข้อมูลภาพ กรุณาลองใหม่อีกครั้ง");
-
-            const fileName = `ตารางนัดหมาย_${thaiMonths[currentDate.getMonth()]}_${currentDate.getFullYear() + 543}`;
-
-            if (type === 'image') {
-                const link = document.createElement('a');
-                link.download = `${fileName}.png`;
-                link.href = window.cachedExportDataURL; 
-                link.click();
-            } else if (type === 'pdf') {
-                const pdf = new window.jspdf.jsPDF('l', 'px', [1123, 794]);
-                pdf.addImage(window.cachedExportDataURL, 'PNG', 0, 0, 1123, 794);
-                pdf.save(`${fileName}.pdf`);
-            }
-
-            closePreviewModal();
-        };
-
-        // Global Window Events
-        window.handlePrevMonth = () => { currentDate = new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1); renderCalendar(); };
-        window.handleNextMonth = () => { currentDate = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1); renderCalendar(); };
-        window.handleGoToday = () => { currentDate = new Date(); renderCalendar(); };
-        
-        window.openDayDetails = (dateStr) => {
-            selectedDate = dateStr;
-            document.getElementById('ev-enddate').min = dateStr;
-            renderModalDetails();
-            document.getElementById('details-modal').classList.remove('hidden');
-            document.getElementById('details-modal').classList.add('flex');
-        };
-        
-        window.closeDetailsModal = () => {
-            document.getElementById('details-modal').classList.add('hidden');
-            document.getElementById('details-modal').classList.remove('flex');
-            selectedDate = null;
-        };
-
-        window.toggleAdminModal = () => {
-            if (isAdmin) {
-                isAdmin = false;
-                updateAdminUI();
+            if(siteActive) {
+                btn.className = "px-3 py-1 bg-emerald-50 text-emerald-600 border border-emerald-200 rounded-lg text-[10px] font-bold shadow-sm";
+                btn.innerText = "เปิดใช้งานอยู่";
+                if(warn) warn.classList.add('hidden');
             } else {
-                document.getElementById('auth-password').value = '';
-                document.getElementById('auth-error').classList.add('hidden');
+                btn.className = "px-3 py-1 bg-rose-50 text-rose-600 border border-rose-200 rounded-lg text-[10px] font-bold shadow-sm animate-pulse";
+                btn.innerText = "ปิดปรับปรุง";
+                if(isAdmin && warn) warn.classList.remove('hidden');
+            }
+            checkSiteVisibility();
+        };
+
+        // Main Auth & Logic
+        window.toggleAdminModal = () => {
+            if (isAdmin) { 
+                isAdmin = false; 
+                updateAdminUI(); 
+            } else { 
+                const passInput = document.getElementById('auth-password');
+                if(passInput) passInput.value = '';
+                
+                const authErr = document.getElementById('auth-error');
+                if(authErr) authErr.classList.add('hidden');
+                
                 document.getElementById('auth-modal').classList.remove('hidden');
                 document.getElementById('auth-modal').classList.add('flex');
-                setTimeout(() => document.getElementById('auth-password').focus(), 100);
             }
         };
-
-        window.closeAuthModal = () => {
-            document.getElementById('auth-modal').classList.add('hidden');
-            document.getElementById('auth-modal').classList.remove('flex');
+        
+        window.closeAuthModal = () => { 
+            document.getElementById('auth-modal').classList.add('hidden'); 
+            document.getElementById('auth-modal').classList.remove('flex'); 
         };
-
+        
+        window.closePreviewModal = () => { 
+            document.getElementById('preview-modal').classList.add('hidden'); 
+            document.getElementById('preview-modal').classList.remove('flex'); 
+        };
+        
         document.getElementById('auth-form').addEventListener('submit', (e) => {
             e.preventDefault();
-            const pass = document.getElementById('auth-password').value;
-            if (pass === '65030900') {
-                isAdmin = true;
-                updateAdminUI();
-                window.closeAuthModal();
-            } else {
-                document.getElementById('auth-error').classList.remove('hidden');
+            if (document.getElementById('auth-password').value === '65030900') {
+                isAdmin = true; 
+                updateAdminUI(); 
+                closeAuthModal();
+            } else { 
+                document.getElementById('auth-error').classList.remove('hidden'); 
             }
         });
 
         document.getElementById('add-event-form').addEventListener('submit', async (e) => {
             e.preventDefault();
-            if (!user) return alert("รอการเชื่อมต่อฐานข้อมูลสักครู่...");
+            if (!user) return alert("รอเชื่อมต่อ...");
+            const subBtn = document.getElementById('submit-btn');
+            const subTxt = document.getElementById('submit-text');
+            const editId = document.getElementById('ev-id').value;
             
-            const title = document.getElementById('ev-title').value;
-            if (!title) return;
+            const rows = document.querySelectorAll('.link-form-row');
+            const links = Array.from(rows).map(r => ({
+                label: r.querySelector('.link-label').value,
+                url: r.querySelector('.link-url').value,
+                order: r.querySelector('.link-order').value || 0
+            })).filter(l => l.url);
 
-            const submitBtn = e.target.querySelector('button[type="submit"]');
-            submitBtn.disabled = true;
-            submitBtn.innerHTML = `กำลังบันทึก...`;
+            const data = {
+                title: document.getElementById('ev-title').value,
+                time: document.getElementById('ev-time').value,
+                endDate: document.getElementById('ev-enddate').value,
+                color: document.getElementById('ev-color').value,
+                description: document.getElementById('ev-desc').value,
+                links: links,
+                date: selectedDate,
+                updatedAt: new Date().toISOString()
+            };
+
+            subBtn.disabled = true;
+            if(subTxt) subTxt.innerText = "กำลังบันทึก...";
 
             try {
-                const eventsRef = collection(db, 'calendar_events');
-                await addDoc(eventsRef, {
-                    title: title,
-                    time: document.getElementById('ev-time').value,
-                    endDate: document.getElementById('ev-enddate').value,
-                    description: document.getElementById('ev-desc').value,
-                    link: document.getElementById('ev-link').value,
-                    color: document.getElementById('ev-color').value,
-                    date: selectedDate,
-                    createdAt: new Date().toISOString()
-                });
-                
-                document.getElementById('add-event-form').reset();
-                document.getElementById('ev-time').value = "09:00";
-                document.getElementById('ev-color').value = "blue";
-            } catch (error) {
-                console.error("Error adding event:", error);
-                alert("เกิดข้อผิดพลาดในการบันทึกข้อมูล");
-            } finally {
-                submitBtn.disabled = false;
-                submitBtn.innerHTML = `<i data-lucide="plus" class="w-4 h-4"></i> บันทึกกิจกรรม`;
-                if(window.lucide) window.lucide.createIcons();
+                if(editId) await updateDoc(doc(db, 'calendar_events', editId), data);
+                else { 
+                    data.createdAt = new Date().toISOString(); 
+                    await addDoc(collection(db, 'calendar_events'), data); 
+                }
+                resetForm(); 
+                closeDetailsModal();
+            } catch (err) { 
+                alert(err.message); 
+            } finally { 
+                subBtn.disabled = false; 
+                if(subTxt) subTxt.innerText = editId ? "อัปเดตข้อมูล" : "บันทึกกิจกรรม";
             }
         });
 
-        window.handleDeleteEvent = async (eventId) => {
-            if (!user || !isAdmin) return;
-            if (confirm("ต้องการลบกิจกรรมนี้ใช่หรือไม่?")) {
-                try {
-                    await deleteDoc(doc(db, 'calendar_events', eventId));
-                } catch (error) {
-                    console.error("Error deleting event:", error);
-                }
+        window.handleDeleteEvent = async (id) => {
+            if (isAdmin && confirm("ยืนยันการลบ?")) {
+                await deleteDoc(doc(db, 'calendar_events', id));
+                renderAdminHistory();
             }
         };
 
-        const initApp = async () => {
-            try {
-                await signInAnonymously(auth);
-            } catch (e) {
-                console.warn("Auth initialization warning:", e);
+        window.downloadFromPreview = (type) => {
+            if (!window.cachedExportDataURL) return;
+            const fn = `Calendar_${currentDate.getMonth()+1}_${currentDate.getFullYear()+543}`;
+            if (type === 'image') {
+                const a = document.createElement('a'); 
+                a.download = fn + '.png'; 
+                a.href = window.cachedExportDataURL; 
+                a.click();
+            } else {
+                const pdf = new jspdf.jsPDF('l', 'px', [1123, 794]);
+                pdf.addImage(window.cachedExportDataURL, 'PNG', 0, 0, 1123, 794);
+                pdf.save(fn + '.pdf');
             }
+        };
 
-            onAuthStateChanged(auth, (currentUser) => {
-                user = currentUser;
-                if (currentUser) {
-                    const eventsRef = collection(db, 'calendar_events');
-                    onSnapshot(eventsRef, (snapshot) => {
-                        events = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        window.handlePrevMonth = () => { currentDate.setMonth(currentDate.getMonth() - 1); renderCalendar(); };
+        window.handleNextMonth = () => { currentDate.setMonth(currentDate.getMonth() + 1); renderCalendar(); };
+        window.handleGoToday = () => { currentDate = new Date(); renderCalendar(); };
+        
+        window.openDayDetails = (ds) => { 
+            selectedDate = ds; 
+            const ed = document.getElementById('ev-enddate');
+            if(ed) ed.min = ds;
+            renderModalDetails(); 
+            document.getElementById('details-modal').classList.remove('hidden'); 
+            document.getElementById('details-modal').classList.add('flex'); 
+        };
+        
+        window.closeDetailsModal = () => { 
+            document.getElementById('details-modal').classList.add('hidden'); 
+            document.getElementById('details-modal').classList.remove('flex'); 
+            resetForm();
+        };
+
+        const init = async () => {
+            try { await signInAnonymously(auth); } catch (e) {}
+            onAuthStateChanged(auth, (curr) => {
+                user = curr;
+                if (curr) {
+                    onSnapshot(collection(db, 'calendar_events'), (snap) => {
+                        events = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+                        renderCalendar(); 
                         renderDashboard();
-                        renderCalendar();
+                        if (isAdmin) renderAdminHistory();
                         if (selectedDate) renderModalDetails();
-                        
                         document.getElementById('loading').classList.add('hidden');
-                        document.getElementById('app-content').classList.remove('hidden');
-                    }, (error) => {
-                        console.error("Error fetching events:", error);
+                        checkSiteVisibility();
                     });
-                } else {
-                    document.getElementById('loading').classList.add('hidden');
-                    document.getElementById('app-content').classList.remove('hidden');
+                    onSnapshot(doc(db, 'settings', 'site_config'), (doc) => {
+                        if(doc.exists()) { siteActive = doc.data().is_active; }
+                        updateSiteStatusUI();
+                    });
                 }
             });
-            
             if(window.lucide) window.lucide.createIcons();
         };
-
-        initApp();
+        init();
     </script>
 </body>
 </html>
