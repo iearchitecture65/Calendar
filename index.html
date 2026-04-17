@@ -1493,8 +1493,8 @@
             // Setup dimensions based on orientation
             const canvasW = orient === 'l' ? 1123 : 794;
             const canvasH = orient === 'l' ? 794 : 1123;
-            // Adjust max height for pagination: Portrait is taller, so we have more vertical space
-            const contentMaxH = orient === 'l' ? 450 : 800; 
+            // ปรับเพิ่มความสูงสูงสุดของเนื้อหาให้ลงมาเกือบชิด Footer
+            const contentMaxH = orient === 'l' ? 600 : 940; 
 
             for (const { year: y, month: m } of monthsToRender) {
                 const dim = new Date(y, m + 1, 0).getDate();
@@ -1658,10 +1658,17 @@
 
                 // Pagination logic for THIS month
                 const measureDiv = document.createElement('div');
-                measureDiv.style.width = (orient === 'l' ? '560px' : '100%'); // Approximation
-                measureDiv.style.position = 'absolute';
-                measureDiv.style.visibility = 'hidden';
-                measureDiv.style.fontFamily = "'Kanit', sans-serif";
+                // แยกการกำหนด Style เพื่อป้องกันการรบกวนจากคลาสหลักของเว็บ ทำให้วัดความสูงได้เป๊ะขึ้น
+                measureDiv.style.cssText = `
+                    width: ${orient === 'l' ? '623px' : '430px'};
+                    position: absolute;
+                    visibility: hidden;
+                    top: -9999px;
+                    left: -9999px;
+                    font-family: 'Kanit', sans-serif;
+                    box-sizing: border-box;
+                    padding-right: 5px;
+                `;
                 document.body.appendChild(measureDiv);
 
                 const pagesData = [];
