@@ -170,17 +170,20 @@
     </div>
 
     <!-- Main Content Container -->
-    <div id="app-content" class="w-full max-w-7xl p-3 sm:p-6 lg:p-8 space-y-6 relative hidden">
+    <div id="app-content" class="w-full max-w-7xl px-3 py-1 sm:p-6 lg:p-8 space-y-4 relative hidden">
         
         <!-- Admin Toggle Button & Status Panel -->
-        <div class="absolute top-4 right-4 sm:top-6 sm:right-6 flex items-center gap-2 z-10">
+        <div class="absolute top-2 right-4 sm:top-6 sm:right-6 flex items-center gap-2 z-10">
             <div id="site-control-panel" class="hidden fade-in bg-white/80 backdrop-blur border border-slate-200 rounded-xl p-1.5 shadow-sm flex items-center">
-                <button id="admin-annc-toggle" onclick="openAdminAnnouncement()" class="px-2 py-1 bg-amber-50 hover:bg-amber-100 text-amber-600 border border-amber-200 rounded-lg text-[10px] font-bold transition-all shadow-sm flex items-center gap-1 mr-2 ml-0.5">
-                    <i data-lucide="megaphone" class="w-3 h-3"></i> ประกาศ
+                <!-- แก้ไขปุ่มประกาศให้เป็นสัญลักษณ์ในมือถือ -->
+                <button id="admin-annc-toggle" onclick="openAdminAnnouncement()" class="px-2 py-1 bg-amber-50 hover:bg-amber-100 text-amber-600 border border-amber-200 rounded-lg text-[10px] font-bold transition-all shadow-sm flex items-center gap-1 mr-1 sm:mr-2 ml-0.5">
+                    <i data-lucide="megaphone" class="w-3.5 h-3.5 sm:w-3 sm:h-3"></i> 
+                    <span class="hidden sm:inline">ประกาศ</span>
                 </button>
                 <div class="h-4 w-px bg-slate-200 mx-1"></div>
-                <span class="text-[10px] font-bold px-2 text-slate-500 uppercase tracking-wider">สถานะเว็บ:</span>
-                <button id="site-status-toggle" onclick="handleToggleSiteStatus()" class="px-3 py-1 rounded-lg text-[10px] font-bold transition-all shadow-sm">
+                <!-- ซ่อนข้อความ สถานะเว็บ ในมือถือ -->
+                <span class="hidden sm:inline-block text-[10px] font-bold px-2 text-slate-500 uppercase tracking-wider">สถานะเว็บ:</span>
+                <button id="site-status-toggle" onclick="handleToggleSiteStatus()" class="px-2 sm:px-3 py-1 rounded-lg text-[10px] font-bold transition-all shadow-sm">
                     กำลังโหลด...
                 </button>
             </div>
@@ -190,20 +193,20 @@
         </div>
 
         <!-- Header -->
-        <div class="flex flex-col items-center justify-center pt-2 sm:pt-4 pb-2 text-center">
-            <div class="p-3 bg-white rounded-full shadow-sm mb-3 text-indigo-500 mx-auto">
-                <i data-lucide="calendar" class="w-8 h-8"></i>
+        <div class="flex flex-col items-center justify-center pt-0 pb-1 text-center">
+            <div class="p-2 bg-white rounded-full shadow-sm mb-1.5 text-indigo-500 mx-auto">
+                <i data-lucide="calendar" class="w-6 h-6 sm:w-8 sm:h-8"></i>
             </div>
-            <h1 class="text-xl sm:text-2xl font-bold text-slate-800">ตารางนัดหมาย</h1>
-            <p id="site-offline-warning" class="text-xs font-bold text-rose-500 mt-1 hidden animate-pulse underline decoration-rose-200">● ขณะนี้เว็บไซต์อยู่ในสถานะปิดปรับปรุง (เฉพาะแอดมินที่เห็นหน้านี้)</p>
+            <h1 class="text-xl sm:text-2xl font-bold text-slate-800 leading-none">ตารางนัดหมาย</h1>
+            <p id="site-offline-warning" class="text-[10px] sm:text-xs font-bold text-rose-500 mt-1 hidden animate-pulse underline decoration-rose-200">● ขณะนี้เว็บไซต์อยู่ในสถานะปิดปรับปรุง</p>
         </div>
 
         <!-- RESPONSIVE GRID -->
         <div class="flex flex-col lg:flex-row gap-6 items-start">
             
             <!-- SECTION: CALENDAR (Mobile Order 1 | Desktop Order 1) -->
-            <div class="w-full lg:flex-1 bg-white rounded-[2.5rem] shadow-xl border border-white p-6 order-1">
-                <div class="flex items-center justify-between mb-6 px-2">
+            <div class="w-full lg:flex-1 bg-white rounded-[2rem] sm:rounded-[2.5rem] shadow-xl border border-white p-4 sm:p-6 order-1">
+                <div class="flex items-center justify-between mb-4 sm:mb-6 px-2">
                     <button onclick="handlePrevMonth()" class="p-2 hover:bg-slate-100 rounded-lg text-indigo-600 transition-colors">
                         <i data-lucide="chevron-left" class="w-5 h-5"></i>
                     </button>
@@ -1071,13 +1074,20 @@
             const warn = document.getElementById('site-offline-warning');
             if(!btn) return;
 
+            // ปรับฟังก์ชันให้รองรับการแสดงสัญลักษณ์ในมือถือ
+            const statusText = siteActive ? "เปิดใช้งานอยู่" : "ปิดปรับปรุง";
+            const colorClass = siteActive ? "bg-emerald-50 text-emerald-600 border-emerald-200" : "bg-rose-50 text-rose-600 border-rose-200 animate-pulse";
+            const dotColor = siteActive ? "bg-emerald-500" : "bg-rose-500";
+            
+            btn.className = `px-2 sm:px-3 py-1 border rounded-lg text-[10px] font-bold shadow-sm transition-all flex items-center gap-1.5 ${colorClass}`;
+            btn.innerHTML = `
+                <div class="w-2 h-2 rounded-full ${dotColor}"></div>
+                <span class="hidden sm:inline">${statusText}</span>
+            `;
+
             if(siteActive) {
-                btn.className = "px-3 py-1 bg-emerald-50 text-emerald-600 border border-emerald-200 rounded-lg text-[10px] font-bold shadow-sm transition-all";
-                btn.innerText = "เปิดใช้งานอยู่";
                 if(warn) warn.classList.add('hidden');
             } else {
-                btn.className = "px-3 py-1 bg-rose-50 text-rose-600 border border-rose-200 rounded-lg text-[10px] font-bold shadow-sm animate-pulse";
-                btn.innerText = "ปิดปรับปรุง";
                 if(isAdmin && warn) warn.classList.remove('hidden');
             }
             checkSiteVisibility();
