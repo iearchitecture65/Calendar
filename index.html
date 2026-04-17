@@ -194,8 +194,32 @@
         <!-- RESPONSIVE GRID -->
         <div class="flex flex-col lg:flex-row gap-6 items-start">
             
-            <!-- SECTION: DASHBOARDS (Mobile Order 1 | Desktop Order 2) -->
-            <div class="w-full lg:flex-[1.2] space-y-4 order-1 lg:order-2 shrink-0">
+            <!-- SECTION: CALENDAR (Mobile Order 1 | Desktop Order 1) -->
+            <!-- ปรับเป็น order-1 เพื่อให้อยู่ด้านบนสุดในมือถือ -->
+            <div class="w-full lg:flex-1 bg-white rounded-[2.5rem] shadow-xl border border-white p-6 order-1">
+                <div class="flex items-center justify-between mb-6 px-2">
+                    <button onclick="handlePrevMonth()" class="p-2 hover:bg-slate-100 rounded-lg text-indigo-600 transition-colors">
+                        <i data-lucide="chevron-left" class="w-5 h-5"></i>
+                    </button>
+                    <div class="text-center overflow-hidden">
+                        <h2 id="calendar-month-year" class="text-base sm:text-lg lg:text-xl font-black text-slate-800 cursor-pointer hover:text-indigo-600 transition-all leading-none whitespace-nowrap" onclick="handleGoToday()" title="กลับไปวันนี้"></h2>
+                    </div>
+                    <button onclick="handleNextMonth()" class="p-2 hover:bg-slate-100 rounded-lg text-indigo-600 transition-colors">
+                        <i data-lucide="chevron-right" class="w-5 h-5"></i>
+                    </button>
+                </div>
+                <div id="admin-export-buttons" class="hidden fade-in mb-4 text-center">
+                    <button onclick="openPreviewModal()" class="inline-flex items-center gap-2 px-4 py-1.5 bg-indigo-600 text-white hover:bg-indigo-700 rounded-xl text-[11px] font-semibold transition-colors shadow-sm w-full justify-center">
+                        <i data-lucide="printer" class="w-3.5 h-3.5"></i> พรีวิว & ส่งออก
+                    </button>
+                </div>
+                <div class="grid grid-cols-7 gap-1 mb-2" id="calendar-days-header"></div>
+                <div class="grid grid-cols-7 gap-1" id="calendar-grid"></div>
+            </div>
+
+            <!-- SECTION: DASHBOARDS (Mobile Order 2 | Desktop Order 2) -->
+            <!-- ปรับเป็น order-2 เพื่อให้อยู่ต่อจากปฏิทินในมือถือ -->
+            <div class="w-full lg:flex-[1.2] space-y-4 order-2 shrink-0">
                 <!-- Today's Events -->
                 <div class="bg-white rounded-[1.5rem] shadow-sm border border-slate-100 p-4 sm:p-5 flex flex-col max-h-[250px] lg:max-h-none overflow-hidden text-sm">
                     <div class="flex items-center gap-2 mb-3 shrink-0">
@@ -216,33 +240,11 @@
                             </div>
                             <h3 class="font-bold text-slate-800 text-sm">กิจกรรมที่กำลังมาถึง</h3>
                         </div>
-                        <div class="text-[10px] font-bold text-indigo-500 bg-indigo-50 px-2 py-1 rounded-full group-hover:bg-indigo-100 transition-colors">ดูทั้งหมด <i data-lucide="external-link" class="w-2.5 h-2.5 inline-block -mt-0.5"></i></div>
                     </div>
                     <div id="upcoming-events-container" class="relative overflow-hidden min-h-[100px]"></div>
                 </div>
             </div>
 
-            <!-- SECTION: CALENDAR (Mobile Order 2 | Desktop Order 1) -->
-            <div class="w-full lg:flex-1 bg-white rounded-[2.5rem] shadow-xl border border-white p-6 order-2 lg:order-1">
-                <div class="flex items-center justify-between mb-6 px-2">
-                    <button onclick="handlePrevMonth()" class="p-2 hover:bg-slate-100 rounded-lg text-indigo-600 transition-colors">
-                        <i data-lucide="chevron-left" class="w-5 h-5"></i>
-                    </button>
-                    <div class="text-center overflow-hidden">
-                        <h2 id="calendar-month-year" class="text-base sm:text-lg lg:text-xl font-black text-slate-800 cursor-pointer hover:text-indigo-600 transition-all leading-none whitespace-nowrap" onclick="handleGoToday()" title="กลับไปวันนี้"></h2>
-                    </div>
-                    <button onclick="handleNextMonth()" class="p-2 hover:bg-slate-100 rounded-lg text-indigo-600 transition-colors">
-                        <i data-lucide="chevron-right" class="w-5 h-5"></i>
-                    </button>
-                </div>
-                <div id="admin-export-buttons" class="hidden fade-in mb-4 text-center">
-                    <button onclick="openPreviewModal()" class="inline-flex items-center gap-2 px-4 py-1.5 bg-indigo-600 text-white hover:bg-indigo-700 rounded-xl text-[11px] font-semibold transition-colors shadow-sm w-full justify-center">
-                        <i data-lucide="printer" class="w-3.5 h-3.5"></i> พรีวิว & ส่งออก
-                    </button>
-                </div>
-                <div class="grid grid-cols-7 gap-1 mb-2" id="calendar-days-header"></div>
-                <div class="grid grid-cols-7 gap-1" id="calendar-grid"></div>
-            </div>
         </div>
 
         <!-- ADMIN HISTORY SECTION -->
@@ -268,7 +270,7 @@
                         <tr>
                             <th class="px-4 py-3 font-semibold">วันที่</th>
                             <th class="px-4 py-3 font-semibold">หัวข้อ</th>
-                            <th class="px-4 py-3 font-semibold">เวลา</th>
+                            <th class="px-4 py-3 font-semibold text-center">เวลา</th>
                             <th class="px-4 py-3 font-semibold text-center">จัดการ</th>
                         </tr>
                     </thead>
@@ -727,6 +729,7 @@
             document.getElementById('announcement-modal').classList.remove('hidden');
             document.getElementById('announcement-modal').classList.add('flex');
             hasShownPopup = true;
+            if(window.lucide) window.lucide.createIcons();
             updateScrollLock();
         }
 
@@ -825,7 +828,7 @@
             }).join('');
             
             const dateInfo = (e.endDate && e.endDate !== e.date) ? `${formatThaiDate(e.date)} ถึง ${formatThaiDate(e.endDate)}` : formatThaiDate(e.date);
-            const dateHtml = (showFullDate || (e.endDate && e.endDate !== e.date)) ? `<span class="text-[9px] font-bold text-slate-500 ml-2 border-l border-slate-300 pl-2">${dateInfo}</span>` : '';
+            const dateHtml = (showFullDate || (e.endDate && e.endDate !== e.date)) ? `<span class="text-[10px] font-bold text-slate-500 ml-2 border-l border-slate-200 pl-2">${dateInfo}</span>` : '';
 
             const adminActions = (isAdmin && showAdminOpts) ? `
                 <div class="flex justify-end gap-2 mt-3 pt-2" style="border-top: 1px solid ${hex}30;">
@@ -862,6 +865,7 @@
                         <div class="flex justify-between items-center mb-1.5">
                             <div class="flex items-center">
                                 <span class="text-[10px] font-bold px-1.5 py-0.5 rounded shadow-sm whitespace-nowrap" style="background-color: ${hex}; color: #ffffff;">${e.time} น.</span>
+                                ${dateHtml}
                             </div>
                         </div>
                         <h5 class="font-bold text-[12px] leading-tight mt-0.5 line-clamp-2 text-slate-800">${escapeHTML(e.title)}</h5>
@@ -883,6 +887,7 @@
             
             document.getElementById('upcoming-modal').classList.remove('hidden');
            document.getElementById('upcoming-modal').classList.add('flex');
+            if(window.lucide) window.lucide.createIcons();
             updateScrollLock();
         }
 
@@ -1008,7 +1013,7 @@
                     <tr class="hover:bg-slate-50/50 transition-colors">
                         <td class="px-4 py-3 text-[11px] font-medium text-slate-500 leading-tight">${dateDisplay}</td>
                         <td class="px-4 py-3 font-semibold text-slate-700">${escapeHTML(e.title)}</td>
-                        <td class="px-4 py-3 text-[11px] text-slate-500">${e.time} น.</td>
+                        <td class="px-4 py-3 text-center text-[11px] text-slate-500">${e.time} น.</td>
                         <td class="px-4 py-3 text-center">
                             <div class="flex justify-center gap-1">
                                 <button onclick="handleEditEvent('${e.id}')" class="p-1.5 text-indigo-500 hover:bg-indigo-50 rounded-md transition-colors"><i data-lucide="edit-3" class="w-4 h-4"></i></button>
@@ -1220,6 +1225,7 @@
             renderCalendar();
             document.getElementById('details-modal').classList.remove('hidden'); 
             document.getElementById('details-modal').classList.add('flex'); 
+            if(window.lucide) window.lucide.createIcons();
             updateScrollLock();
         }
 
@@ -1374,7 +1380,6 @@
             // เพิ่มชุดเวลาการทำข้อมูลปัจจุบัน
             const now = new Date();
             const tsStr = `${String(now.getDate()).padStart(2,'0')}/${String(now.getMonth()+1).padStart(2,'0')}/${now.getFullYear()+543} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')} น.`;
-            const todayStr = getTodayString(); 
             
             let gridHtml = '';
             for (let i = 0; i < start; i++) gridHtml += `<div></div>`;
@@ -1445,7 +1450,7 @@
             </div>`;
             };
 
-            const renderEventHtml = (e) => {
+            const renderEventHtmlEx = (e) => {
                 let desc = e.description || '';
                 let isTruncated = false;
                 const c = safeColor(e.color);
@@ -1498,7 +1503,7 @@
             let currentHeight = 0;
 
             for (const e of allActiveEvs) {
-                const evHtml = renderEventHtml(e);
+                const evHtml = renderEventHtmlEx(e);
                 measureDiv.innerHTML = evHtml;
                 const evHeight = measureDiv.offsetHeight + 15; // เผื่อขอบ margin-bottom ด้านล่าง
 
@@ -1741,12 +1746,14 @@
                         const evColors = [...new Set(events.map(e => getHexColor(e.color)))].filter(Boolean);
                         evColors.forEach(c => { if(!recentColors.includes(c)) recentColors.unshift(c); });
                         recentColors = recentColors.slice(0, 10);
+                        if(window.lucide) window.lucide.createIcons();
                     });
                       
                     // โหลดการตั้งค่าเว็บ และ การตั้งค่าประกาศควบคู่กัน
                     onSnapshot(doc(db, 'settings', 'site_config'), (snapshot) => {
                         if(snapshot.exists()) { siteActive = snapshot.data().is_active; }
                         updateSiteStatusUI();
+                        if(window.lucide) window.lucide.createIcons();
                     });
                       
                     onSnapshot(doc(db, 'settings', 'popup_config'), (snapshot) => {
