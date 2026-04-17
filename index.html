@@ -507,17 +507,26 @@
                 </button>
             </div>
 
-            <!-- Page Selection Bar -->
-            <div id="preview-selection-bar" class="px-4 sm:px-6 py-2 bg-white border-b border-slate-200 flex justify-between items-center shrink-0 w-full hidden">
+            <!-- Page Selection Bar & Zoom Controls -->
+            <div id="preview-selection-bar" class="px-4 sm:px-6 py-2 bg-white border-b border-slate-200 flex justify-between items-center shrink-0 w-full hidden flex-wrap gap-2">
                 <label class="flex items-center gap-2 cursor-pointer select-none">
                     <input type="checkbox" id="select-all-pages" checked onchange="toggleSelectAllPages(this.checked)" class="w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500 cursor-pointer">
                     <span class="text-sm font-bold text-slate-700">เลือกทั้งหมด (<span id="selected-count">0</span>/<span id="total-count">0</span> หน้า)</span>
                 </label>
-                <span class="text-xs text-slate-400 font-medium hidden sm:inline">คลิกที่รูปภาพเพื่อเลือก/ยกเลิกการดาวน์โหลดหน้านั้น</span>
+                <div class="flex items-center gap-2 sm:gap-3">
+                    <span class="text-xs text-slate-400 font-medium hidden sm:inline">คลิกที่รูปภาพเพื่อเลือก/ยกเลิก</span>
+                    <div class="h-4 w-px bg-slate-200 hidden sm:block"></div>
+                    <div class="flex items-center gap-1.5">
+                        <button onclick="changeZoom(-10)" class="p-1 text-slate-400 hover:text-indigo-600 bg-slate-50 hover:bg-slate-100 rounded transition-colors"><i data-lucide="zoom-out" class="w-4 h-4"></i></button>
+                        <input type="range" id="preview-zoom" min="30" max="250" value="90" class="w-20 sm:w-24 accent-indigo-600" oninput="updatePreviewZoom(this.value)">
+                        <button onclick="changeZoom(10)" class="p-1 text-slate-400 hover:text-indigo-600 bg-slate-50 hover:bg-slate-100 rounded transition-colors"><i data-lucide="zoom-in" class="w-4 h-4"></i></button>
+                        <span id="zoom-text" class="text-xs font-bold text-slate-600 w-9 text-right">90%</span>
+                    </div>
+                </div>
             </div>
 
             <!-- Preview Images Container -->
-            <div id="preview-images-container" class="flex-1 overflow-auto bg-[#cbd5e1] p-4 sm:p-8 flex flex-col items-center gap-6">
+            <div id="preview-images-container" class="flex-1 overflow-auto bg-[#cbd5e1] p-4 sm:p-8">
                 <!-- รูปภาพจะถูกเพิ่มเข้ามาที่นี่โดย JS -->
             </div>
 
@@ -651,6 +660,25 @@
         window.closeAdminAnnouncement = closeAdminAnnouncement;
         window.openUpcomingModal = openUpcomingModal;
         window.closeUpcomingModal = closeUpcomingModal;
+
+        // --- Zoom Control Logic ---
+        window.currentZoom = 90; // Default zoom level for preview images
+        window.changeZoom = (delta) => {
+            let z = window.currentZoom + delta;
+            if(z < 30) z = 30;
+            if(z > 250) z = 250;
+            document.getElementById('preview-zoom').value = z;
+            window.updatePreviewZoom(z);
+        };
+        window.updatePreviewZoom = (val) => {
+            window.currentZoom = parseInt(val);
+            const zoomText = document.getElementById('zoom-text');
+            if(zoomText) zoomText.innerText = val + '%';
+            const wrappers = document.querySelectorAll('.preview-image-wrapper');
+            wrappers.forEach(w => {
+                w.style.width = `${val}%`;
+            });
+        };
         
         // --- Color Picker Function ---
         window.toggleColorPicker = (e) => {
@@ -1816,7 +1844,9 @@
                       
                     // Create wrapper for selectable image
                     const wrapper = document.createElement('div');
-                    wrapper.className = "relative group cursor-pointer w-fit";
+                    wrapper.className = "relative group cursor-pointer preview-image-wrapper mx-auto mb-6 shrink-0";
+                    wrapper.style.width = `${window.currentZoom || 90}%`;
+                    wrapper.style.transition = "width 0.2s ease-out";
                     wrapper.onclick = (e) => {
                         if(e.target.tagName !== 'INPUT') {
                             const cb = wrapper.querySelector('input[type="checkbox"]');
@@ -1827,7 +1857,7 @@
 
                     const img = document.createElement('img');
                     img.src = dataUrl;
-                    img.className = "max-w-full h-auto rounded-xl shadow-lg border-4 transition-all duration-200 ring-4 ring-indigo-500 border-transparent";
+                    img.className = "w-full h-auto rounded-xl shadow-lg border-4 transition-all duration-200 ring-4 ring-indigo-500 border-transparent bg-white";
                     
                     const checkboxWrapper = document.createElement('div');
                     checkboxWrapper.className = "absolute top-4 left-4 bg-white/90 backdrop-blur rounded-lg py-1.5 px-2.5 shadow-md flex items-center gap-2 border border-slate-200";
