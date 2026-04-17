@@ -20,9 +20,11 @@
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
     
-    <!-- html-to-image & jsPDF -->
+    <!-- html-to-image, jsPDF & JSZip -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html-to-image/1.11.11/html-to-image.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <!-- เพิ่มไลบรารี JSZip สำหรับรวมไฟล์ -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 
     <script>
         tailwind.config = {
@@ -505,16 +507,26 @@
                 </button>
             </div>
 
+            <!-- Page Selection Bar -->
+            <div id="preview-selection-bar" class="px-4 sm:px-6 py-2 bg-white border-b border-slate-200 flex justify-between items-center shrink-0 w-full hidden">
+                <label class="flex items-center gap-2 cursor-pointer select-none">
+                    <input type="checkbox" id="select-all-pages" checked onchange="toggleSelectAllPages(this.checked)" class="w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500 cursor-pointer">
+                    <span class="text-sm font-bold text-slate-700">เลือกทั้งหมด (<span id="selected-count">0</span>/<span id="total-count">0</span> หน้า)</span>
+                </label>
+                <span class="text-xs text-slate-400 font-medium hidden sm:inline">คลิกที่รูปภาพเพื่อเลือก/ยกเลิกการดาวน์โหลดหน้านั้น</span>
+            </div>
+
             <!-- Preview Images Container -->
             <div id="preview-images-container" class="flex-1 overflow-auto bg-[#cbd5e1] p-4 sm:p-8 flex flex-col items-center gap-6">
                 <!-- รูปภาพจะถูกเพิ่มเข้ามาที่นี่โดย JS -->
             </div>
 
             <!-- Modal Footer Actions -->
-            <div class="p-4 sm:px-6 border-t border-slate-100 bg-white flex flex-wrap justify-end gap-3 shrink-0">
-                <button onclick="closePreviewModal()" class="px-5 py-2.5 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 rounded-xl text-sm font-bold shadow-sm transition-colors">กลับไปแก้ไข</button>
-                <button onclick="downloadFromPreview('image')" class="flex items-center gap-2 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-sm font-bold shadow-sm transition-all"><i data-lucide="download" class="w-4 h-4"></i> ดาวน์โหลดรูปทั้งหมด</button>
-                <button onclick="downloadFromPreview('pdf')" class="flex items-center gap-2 px-5 py-2.5 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-sm font-bold shadow-sm transition-all"><i data-lucide="file-down" class="w-4 h-4"></i> ดาวน์โหลด PDF</button>
+            <div class="p-4 sm:px-6 border-t border-slate-100 bg-white flex flex-wrap justify-end gap-2 sm:gap-3 shrink-0">
+                <button onclick="closePreviewModal()" class="px-4 sm:px-5 py-2 sm:py-2.5 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 rounded-xl text-xs sm:text-sm font-bold shadow-sm transition-colors">กลับไปแก้ไข</button>
+                <button onclick="downloadFromPreview('image', this)" class="flex items-center gap-1.5 sm:gap-2 px-4 sm:px-5 py-2 sm:py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs sm:text-sm font-bold shadow-sm transition-all"><i data-lucide="image" class="w-4 h-4"></i> โหลดรูป (ที่เลือก)</button>
+                <button onclick="downloadFromPreview('pdf', this)" class="flex items-center gap-1.5 sm:gap-2 px-4 sm:px-5 py-2 sm:py-2.5 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs sm:text-sm font-bold shadow-sm transition-all"><i data-lucide="file-down" class="w-4 h-4"></i> โหลด PDF (ที่เลือก)</button>
+                <button onclick="downloadFromPreview('zip', this)" class="flex items-center gap-1.5 sm:gap-2 px-4 sm:px-5 py-2 sm:py-2.5 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-xs sm:text-sm font-bold shadow-sm transition-all"><i data-lucide="archive" class="w-4 h-4"></i> โหลด ZIP (ที่เลือก)</button>
             </div>
         </div>
     </div>
@@ -1714,6 +1726,38 @@
 
         window.cachedExportDataURLs = []; 
 
+        window.toggleSelectAllPages = (checked) => {
+            const checkboxes = document.querySelectorAll('.page-checkbox');
+            checkboxes.forEach(cb => cb.checked = checked);
+            window.updateSelectedCount();
+        };
+
+        window.updateSelectedCount = () => {
+            const checkboxes = document.querySelectorAll('.page-checkbox');
+            const selected = Array.from(checkboxes).filter(cb => cb.checked).length;
+            const total = checkboxes.length;
+            
+            const countEl = document.getElementById('selected-count');
+            const totalEl = document.getElementById('total-count');
+            const selectAllCb = document.getElementById('select-all-pages');
+            
+            if(countEl) countEl.innerText = selected;
+            if(totalEl) totalEl.innerText = total;
+            if(selectAllCb) selectAllCb.checked = (selected === total && total > 0);
+
+            // Highlight images based on selection
+            checkboxes.forEach(cb => {
+                const img = cb.closest('.relative').querySelector('img');
+                if (cb.checked) {
+                    img.classList.add('ring-4', 'ring-indigo-500');
+                    img.classList.remove('border-transparent', 'opacity-60');
+                } else {
+                    img.classList.remove('ring-4', 'ring-indigo-500');
+                    img.classList.add('border-transparent', 'opacity-60');
+                }
+            });
+        };
+
         async function openPreviewModal() {
             // Set initial dates to current month if empty
             const startInput = document.getElementById('prev-start-month');
@@ -1733,9 +1777,12 @@
         async function refreshPreview() {
             const loading = document.getElementById('loading');
             const previewContainer = document.getElementById('preview-images-container');
+            const selectionBar = document.getElementById('preview-selection-bar');
+            
             document.getElementById('loading-text').innerText = "กำลังสร้างภาพพรีวิว (อาจใช้เวลาสักครู่)...";
             loading.classList.remove('hidden');
             if(previewContainer) previewContainer.innerHTML = ''; 
+            if(selectionBar) selectionBar.classList.add('hidden');
             window.cachedExportDataURLs = [];
               
             try {
@@ -1767,12 +1814,42 @@
                       
                     window.cachedExportDataURLs.push(dataUrl);
                       
+                    // Create wrapper for selectable image
+                    const wrapper = document.createElement('div');
+                    wrapper.className = "relative group cursor-pointer w-fit";
+                    wrapper.onclick = (e) => {
+                        if(e.target.tagName !== 'INPUT') {
+                            const cb = wrapper.querySelector('input[type="checkbox"]');
+                            cb.checked = !cb.checked;
+                            window.updateSelectedCount();
+                        }
+                    };
+
                     const img = document.createElement('img');
                     img.src = dataUrl;
-                    img.className = "max-w-full h-auto rounded-xl shadow-lg border border-slate-200 fade-in";
-                    if(previewContainer) previewContainer.appendChild(img);
+                    img.className = "max-w-full h-auto rounded-xl shadow-lg border-4 transition-all duration-200 ring-4 ring-indigo-500 border-transparent";
+                    
+                    const checkboxWrapper = document.createElement('div');
+                    checkboxWrapper.className = "absolute top-4 left-4 bg-white/90 backdrop-blur rounded-lg py-1.5 px-2.5 shadow-md flex items-center gap-2 border border-slate-200";
+                    checkboxWrapper.innerHTML = `
+                        <input type="checkbox" checked value="${i}" class="page-checkbox w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500 cursor-pointer" onchange="updateSelectedCount()">
+                        <span class="text-xs font-bold text-slate-700">หน้า ${i+1}</span>
+                    `;
+
+                    wrapper.appendChild(img);
+                    wrapper.appendChild(checkboxWrapper);
+                    
+                    if(previewContainer) previewContainer.appendChild(wrapper);
                 }
                   
+                if (selectionBar && pagesHtml.length > 0) {
+                    selectionBar.classList.remove('hidden');
+                    // Reset "Select All" to checked state after new preview is generated
+                    const selectAllCb = document.getElementById('select-all-pages');
+                    if (selectAllCb) selectAllCb.checked = true;
+                    window.updateSelectedCount();
+                }
+
                 if(window.lucide) window.lucide.createIcons();
             } catch (e) { 
                 showToast("การพรีวิวล้มเหลว: " + e.message, true); 
@@ -1782,8 +1859,17 @@
             }
         }
 
-        function downloadFromPreview(type) {
-            if (!window.cachedExportDataURLs.length) return;
+        async function downloadFromPreview(type, btnElement) {
+            const checkboxes = Array.from(document.querySelectorAll('.page-checkbox'));
+            const selectedIndices = checkboxes.filter(cb => cb.checked).map(cb => parseInt(cb.value));
+            
+            if (selectedIndices.length === 0) {
+                showToast("กรุณาเลือกอย่างน้อย 1 หน้าเพื่อดาวน์โหลด", true);
+                return;
+            }
+
+            const selectedURLs = selectedIndices.map(idx => window.cachedExportDataURLs[idx]);
+
             const startStr = document.getElementById('prev-start-month').value;
             const endStr = document.getElementById('prev-end-month').value;
             let baseName = `ตารางนัดหมาย`;
@@ -1796,13 +1882,14 @@
             const orient = document.getElementById('prev-orient').value;
               
             if (type === 'image') {
-                window.cachedExportDataURLs.forEach((url, idx) => {
+                selectedURLs.forEach((url, i) => {
+                    const originalIdx = selectedIndices[i];
                     const a = document.createElement('a'); 
-                    a.download = `${baseName}_Page${idx+1}.png`; 
+                    a.download = `${baseName}_Page${originalIdx+1}.png`; 
                     a.href = url; 
                     a.click();
                 });
-            } else {
+            } else if (type === 'pdf') {
                 const { jsPDF } = window.jspdf;
                 const pdf = new jsPDF({
                     orientation: orient,
@@ -1811,13 +1898,41 @@
                     compress: true
                 });
 
-                window.cachedExportDataURLs.forEach((url, idx) => {
+                selectedURLs.forEach((url, idx) => {
                     if (idx > 0) pdf.addPage(orient === 'l' ? [1123, 794] : [794, 1123], orient);
                     pdf.addImage(url, 'PNG', 0, 0, orient === 'l' ? 1123 : 794, orient === 'l' ? 794 : 1123, undefined, 'FAST');
                 });
                 pdf.save(`${baseName}.pdf`);
+            } else if (type === 'zip') {
+                const originalText = btnElement.innerHTML;
+                btnElement.innerHTML = '<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> กำลังสร้าง ZIP...';
+                btnElement.disabled = true;
+
+                try {
+                    const zip = new JSZip();
+                    selectedURLs.forEach((url, i) => {
+                        const originalIdx = selectedIndices[i];
+                        // ลบส่วนหัว data:image/png;base64, ออกเพื่อให้ JSZip อ่านได้ถูกต้อง
+                        const base64Data = url.replace(/^data:image\/(png|jpg);base64,/, "");
+                        zip.file(`${baseName}_Page${originalIdx+1}.png`, base64Data, {base64: true});
+                    });
+                    
+                    const content = await zip.generateAsync({type:"blob"});
+                    const a = document.createElement("a");
+                    a.href = URL.createObjectURL(content);
+                    a.download = `${baseName}.zip`;
+                    a.click();
+                } catch(e) {
+                    console.error(e);
+                    showToast("สร้างไฟล์ ZIP ไม่สำเร็จ", true);
+                } finally {
+                    btnElement.innerHTML = originalText;
+                    btnElement.disabled = false;
+                    if(window.lucide) window.lucide.createIcons();
+                }
             }
         }
+        window.downloadFromPreview = downloadFromPreview;
 
         function handlePrevMonth() { currentDate.setMonth(currentDate.getMonth() - 1); renderCalendar(); }
         function handleNextMonth() { currentDate.setMonth(currentDate.getMonth() + 1); renderCalendar(); }
