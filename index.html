@@ -103,7 +103,6 @@
         <div class="flex flex-col lg:flex-row gap-6 items-start">
             
             <!-- SECTION: DASHBOARDS (Mobile Order 1 | Desktop Order 2) -->
-            <!-- ปรับให้ใหญ่ขึ้นเป็น 55% เพื่อให้ปฏิทินเล็กลง -->
             <div class="w-full lg:w-[55%] space-y-4 order-1 lg:order-2 shrink-0">
                 <!-- Today's Events -->
                 <div class="bg-white rounded-[1.5rem] shadow-sm border border-slate-100 p-4 sm:p-5 flex flex-col max-h-[220px] lg:max-h-none overflow-hidden text-sm">
@@ -129,7 +128,6 @@
             </div>
 
             <!-- SECTION: CALENDAR (Mobile Order 2 | Desktop Order 1) -->
-            <!-- ปรับให้เล็กลงเหลือ 45% สำหรับในคอม -->
             <div class="w-full lg:w-[45%] bg-white rounded-[2rem] shadow-sm border border-slate-100 p-4 sm:p-6 order-2 lg:order-1">
                 <div class="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4 px-1 sm:px-2">
                     <div class="flex items-center gap-2 sm:gap-4">
@@ -806,7 +804,8 @@
             const listHtml = activeEvs.map(e => `
                 <div style="margin-bottom: 15px; border-left: 5px solid ${exportColors[e.color].bg}; padding-left: 15px; page-break-inside: avoid;">
                     <div style="font-weight: 800; font-size: 20px; color: #1e293b;">${escapeHTML(e.title)}</div>
-                    <div style="font-size: 16px; color: #64748b;">${e.date.split('-').reverse().join('/')} - ${e.time} น.</div>
+                    <div style="font-size: 16px; color: #64748b; margin-bottom: 4px;">${e.date.split('-').reverse().join('/')} - ${e.time} น.</div>
+                    ${e.description ? `<div style="font-size: 14px; color: #475569; line-height: 1.4;">${escapeHTML(e.description)}</div>` : ''}
                 </div>
             `).join('');
 
