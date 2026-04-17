@@ -103,9 +103,10 @@
         <div class="flex flex-col lg:flex-row gap-6 items-start">
             
             <!-- SECTION: DASHBOARDS (Mobile Order 1 | Desktop Order 2) -->
-            <div class="w-full lg:w-[42%] space-y-4 order-1 lg:order-2 shrink-0">
+            <!-- ปรับให้ใหญ่ขึ้นเป็น 55% เพื่อให้ปฏิทินเล็กลง -->
+            <div class="w-full lg:w-[55%] space-y-4 order-1 lg:order-2 shrink-0">
                 <!-- Today's Events -->
-                <div class="bg-white rounded-[1.5rem] shadow-sm border border-slate-100 p-4 sm:p-5 flex flex-col max-h-[220px] lg:max-h-none overflow-hidden">
+                <div class="bg-white rounded-[1.5rem] shadow-sm border border-slate-100 p-4 sm:p-5 flex flex-col max-h-[220px] lg:max-h-none overflow-hidden text-sm">
                     <div class="flex items-center gap-2 mb-3 shrink-0">
                         <div class="p-1.5 bg-indigo-50 text-indigo-500 rounded-full">
                             <i data-lucide="calendar-check" class="w-4 h-4"></i>
@@ -116,7 +117,7 @@
                 </div>
 
                 <!-- Upcoming Events -->
-                <div class="bg-white rounded-[1.5rem] shadow-sm border border-slate-100 p-4 sm:p-5 flex flex-col max-h-[280px] lg:max-h-none overflow-hidden">
+                <div class="bg-white rounded-[1.5rem] shadow-sm border border-slate-100 p-4 sm:p-5 flex flex-col max-h-[280px] lg:max-h-none overflow-hidden text-sm">
                     <div class="flex items-center gap-2 mb-3 shrink-0">
                         <div class="p-1.5 bg-rose-50 text-rose-500 rounded-full">
                             <i data-lucide="bell" class="w-4 h-4"></i>
@@ -128,7 +129,8 @@
             </div>
 
             <!-- SECTION: CALENDAR (Mobile Order 2 | Desktop Order 1) -->
-            <div class="w-full lg:w-[58%] bg-white rounded-[2rem] shadow-sm border border-slate-100 p-4 sm:p-6 order-2 lg:order-1">
+            <!-- ปรับให้เล็กลงเหลือ 45% สำหรับในคอม -->
+            <div class="w-full lg:w-[45%] bg-white rounded-[2rem] shadow-sm border border-slate-100 p-4 sm:p-6 order-2 lg:order-1">
                 <div class="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4 px-1 sm:px-2">
                     <div class="flex items-center gap-2 sm:gap-4">
                         <button onclick="handlePrevMonth()" class="p-2 bg-slate-50 hover:bg-slate-100 text-slate-600 rounded-full transition-colors">
