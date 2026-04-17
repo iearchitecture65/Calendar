@@ -6,7 +6,7 @@
     <title>ระบบตารางนัดหมาย</title>
     
     <!-- Favicon (Calendar) -->
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📅</text></svg>">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236366f1' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><rect width='18' height='18' x='3' y='4' rx='2' ry='2'/><line x1='16' x2='16' y1='2' y2='6'/><line x1='8' x2='8' y1='2' y2='6'/><line x1='3' x2='21' y1='10' y2='10'/></svg>">
     
     <!-- Google Fonts: Kanit -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -879,7 +879,7 @@
                         <div class="preview-title-capsule" style="background-color: #4b5563; color: white; border-radius: 999px; padding: 12px 70px; margin-bottom: 10px;">
                             <span style="font-size: 40px; font-weight: 800; line-height: 1;">ตารางนัดหมาย</span>
                         </div>
-                        <span style="font-size: 22px; font-weight: 600; color: #4b5563;">เดือน${thaiMonths[m]} ${y + 543} ${totalPages > 1 ? `(หน้า ${pageNum}/${totalPages})` : ''}</span>
+                        <span style="font-size: 22px; font-weight: 600; color: #4b5563;">เดือน${thaiMonths[m]} ${y + 543} ${totalPages > 1 ? '(หน้า ' + pageNum + '/' + totalPages + ')' : ''}</span>
                     </div>
                     <div style="display: flex; gap: 40px; flex: 1; overflow: hidden;">
                         <!-- ปฏิทินแสดงผลทุกหน้าเหมือนกัน -->
@@ -1114,57 +1114,57 @@
                 if (!isAdmin) return;
                 
                 const id = document.getElementById('ev-id').value;
-                    const title = document.getElementById('ev-title').value;
-                    const time = document.getElementById('ev-time').value;
-                    const endDate = document.getElementById('ev-enddate').value;
-                    const color = document.getElementById('ev-color').value;
-                    const desc = document.getElementById('ev-desc').value;
-                    
-                    const links = [];
-                    document.querySelectorAll('.link-form-row').forEach(row => {
-                        const label = row.querySelector('.link-label').value;
-                        const url = row.querySelector('.link-url').value;
-                        const order = row.querySelector('.link-order').value;
-                        const status = row.querySelector('.link-status').value;
-                        if (label || url) {
-                            links.push({ label, url, order, status });
-                        }
-                    });
-
-                    const eventData = { 
-                        title, time, endDate, color, description: desc, links, 
-                        date: selectedDate 
-                    };
-
-                    try {
-                        const subBtn = document.getElementById('submit-btn');
-                        const subTxt = document.getElementById('submit-text');
-                        const origTxt = subTxt.innerText;
-                        
-                        subTxt.innerText = 'กำลังบันทึก...';
-                        subBtn.disabled = true;
-                        
-                        if (id) {
-                            await updateDoc(doc(db, 'calendar_events', id), eventData);
-                        } else {
-                            await addDoc(collection(db, 'calendar_events'), eventData);
-                        }
-                        
-                        subTxt.innerText = origTxt;
-                        subBtn.disabled = false;
-                        resetForm();
-                        
-                        // บังคับเรนเดอร์ใหม่หลังบันทึก
-                        renderModalDetails();
-                        renderDashboard();
-                        renderAdminHistory();
-
-                    } catch (err) {
-                        console.error(err);
-                        alert('เกิดข้อผิดพลาดในการบันทึกข้อมูล: ' + err.message);
+                const title = document.getElementById('ev-title').value;
+                const time = document.getElementById('ev-time').value;
+                const endDate = document.getElementById('ev-enddate').value;
+                const color = document.getElementById('ev-color').value;
+                const desc = document.getElementById('ev-desc').value;
+                
+                const links = [];
+                document.querySelectorAll('.link-form-row').forEach(row => {
+                    const label = row.querySelector('.link-label').value;
+                    const url = row.querySelector('.link-url').value;
+                    const order = row.querySelector('.link-order').value;
+                    const status = row.querySelector('.link-status').value;
+                    if (label || url) {
+                        links.push({ label, url, order, status });
                     }
                 });
-            }
+
+                const eventData = { 
+                    title, time, endDate, color, description: desc, links, 
+                    date: selectedDate 
+                };
+
+                try {
+                    const subBtn = document.getElementById('submit-btn');
+                    const subTxt = document.getElementById('submit-text');
+                    const origTxt = subTxt.innerText;
+                    
+                    subTxt.innerText = 'กำลังบันทึก...';
+                    subBtn.disabled = true;
+                    
+                    if (id) {
+                        await updateDoc(doc(db, 'calendar_events', id), eventData);
+                    } else {
+                        await addDoc(collection(db, 'calendar_events'), eventData);
+                    }
+                    
+                    subTxt.innerText = origTxt;
+                    subBtn.disabled = false;
+                    resetForm();
+                    
+                    // บังคับเรนเดอร์ใหม่หลังบันทึก
+                    renderModalDetails();
+                    renderDashboard();
+                    renderAdminHistory();
+
+                } catch (err) {
+                    console.error(err);
+                    alert('เกิดข้อผิดพลาดในการบันทึกข้อมูล: ' + err.message);
+                }
+            });
+        }
 
         const init = async () => {
             try { await signInAnonymously(auth); } catch (e) {}
