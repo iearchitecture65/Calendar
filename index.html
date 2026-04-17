@@ -54,6 +54,13 @@
         .link-form-row.dragging { opacity: 0.5; background-color: #f1f5f9; border: 1px dashed #94a3b8; }
         .drag-handle { cursor: grab; }
         .drag-handle:active { cursor: grabbing; }
+
+        /* ระบบขอบสีแบบ Gradient สำหรับปฏิทิน */
+        .calendar-day-btn {
+            border: 2px solid transparent;
+            background-origin: border-box;
+            background-clip: padding-box, border-box;
+        }
     </style>
 </head>
 <body class="bg-[#F8FAFC] text-slate-800 font-sans min-h-screen flex justify-center overflow-x-hidden relative">
@@ -956,21 +963,42 @@
                 const isPast = dayStr < todayStr;
                 
                 const dayEvs = events.filter(e => isDateInRange(dayStr, e.date, e.endDate));
+                const dayColors = [...new Set(dayEvs.map(e => getHexColor(e.color)))];
+                
                 let dots = '';
                 if(dayEvs.length) {
                     dots = `<div class="absolute bottom-1.5 flex gap-0.5">${dayEvs.slice(0,3).map(e => `<span class="w-1 h-1 sm:w-1.5 sm:h-1.5 rounded-full" style="background-color: ${getHexColor(e.color)};"></span>`).join('')}</div>`;
                 }
                 
-                let borderClass = 'border-slate-50 text-slate-700 bg-white';
-                if (isToday) borderClass = 'border-indigo-500 text-indigo-700 bg-indigo-50';
+                // คำนวณสไตล์ของขอบ (Border)
+                let borderInlineStyle = '';
+                let bgContent = 'white'; // พื้นหลังด้านใน (padding-box)
+                
+                if (isToday) bgContent = '#f0f4ff'; // พื้นหลังสีครามอ่อนสำหรับวันนี้
+
+                if (dayColors.length === 1) {
+                    // กรณีมีสีเดียว ให้ใช้สีนั้นเป็นสีขอบ
+                    borderInlineStyle = `border-color: ${dayColors[0]}; background-color: ${bgContent};`;
+                } else if (dayColors.length > 1) {
+                    // กรณีมีหลายสี ให้ไล่เฉดสีที่ขอบ
+                    const gradientColors = dayColors.join(', ');
+                    borderInlineStyle = `
+                        background-image: linear-gradient(${bgContent}, ${bgContent}), linear-gradient(135deg, ${gradientColors});
+                    `;
+                } else {
+                    // กรณีไม่มีกิจกรรม
+                    borderInlineStyle = `border-color: ${isToday ? '#6366f1' : '#f1f5f9'}; background-color: ${bgContent};`;
+                }
 
                 const ringClass = isSelected ? 'ring-4 ring-indigo-200 z-10' : '';
                 const opacityClass = isPast && !isToday ? 'opacity-50 grayscale-[0.5]' : '';
+                const textColor = isToday ? 'text-indigo-700' : 'text-slate-700';
 
                 grid += `
                     <button onclick="openDayDetails('${dayStr}')" 
-                            class="relative aspect-square flex flex-col items-center justify-center rounded-xl transition-all border-2 
-                            ${ringClass} ${borderClass} hover:border-indigo-400 active:scale-90 shadow-sm
+                            style="${borderInlineStyle}"
+                            class="calendar-day-btn relative aspect-square flex flex-col items-center justify-center rounded-xl transition-all 
+                            ${ringClass} ${textColor} hover:brightness-95 active:scale-90 shadow-sm
                             ${opacityClass}">
                         <span class="text-xs sm:text-sm font-bold">${d}</span>
                         ${dots}
