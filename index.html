@@ -195,7 +195,6 @@
         <div class="flex flex-col lg:flex-row gap-6 items-start">
             
             <!-- SECTION: CALENDAR (Mobile Order 1 | Desktop Order 1) -->
-            <!-- ปรับเป็น order-1 เพื่อให้อยู่ด้านบนสุดในมือถือ -->
             <div class="w-full lg:flex-1 bg-white rounded-[2.5rem] shadow-xl border border-white p-6 order-1">
                 <div class="flex items-center justify-between mb-6 px-2">
                     <button onclick="handlePrevMonth()" class="p-2 hover:bg-slate-100 rounded-lg text-indigo-600 transition-colors">
@@ -218,7 +217,6 @@
             </div>
 
             <!-- SECTION: DASHBOARDS (Mobile Order 2 | Desktop Order 2) -->
-            <!-- ปรับเป็น order-2 เพื่อให้อยู่ต่อจากปฏิทินในมือถือ -->
             <div class="w-full lg:flex-[1.2] space-y-4 order-2 shrink-0">
                 <!-- Today's Events -->
                 <div class="bg-white rounded-[1.5rem] shadow-sm border border-slate-100 p-4 sm:p-5 flex flex-col max-h-[250px] lg:max-h-none overflow-hidden text-sm">
@@ -457,7 +455,7 @@
             <div class="p-4 sm:px-6 border-t border-slate-100 bg-slate-50 flex flex-wrap justify-end gap-3 shrink-0">
                 <button onclick="closePreviewModal()" class="px-5 py-2.5 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 rounded-xl text-sm font-semibold shadow-sm transition-colors">กลับไปแก้ไข</button>
                 <button onclick="downloadFromPreview('image')" class="flex items-center gap-2 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-sm font-semibold shadow-sm transition-all"><i data-lucide="download" class="w-4 h-4"></i> ดาวน์โหลดรูปทั้งหมด</button>
-                <button onclick="downloadFromPreview('pdf')" class="flex items-center gap-2 px-5 py-2.5 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-sm font-semibold shadow-sm transition-all"><i data-lucide="file-pdf" class="w-4 h-4"></i> ดาวน์โหลด PDF</button>
+                <button onclick="downloadFromPreview('pdf')" class="flex items-center gap-2 px-5 py-2.5 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-sm font-semibold shadow-sm transition-all"><i data-lucide="file-down" class="w-4 h-4"></i> ดาวน์โหลด PDF</button>
             </div>
         </div>
     </div>
@@ -1554,7 +1552,10 @@
                     await new Promise(r => setTimeout(r, 1000));
                       
                     const dataUrl = await htmlToImage.toPng(wrap, {
-                        quality: 1, pixelRatio: 3, cacheBust: true, useCORS: true,
+                        quality: 1, 
+                        pixelRatio: 2, // ลดความละเอียดจาก 3 เหลือ 2 เพื่อลดขนาดไฟล์
+                        cacheBust: true, 
+                        useCORS: true,
                         filter: (node) => {
                             if (node.tagName === 'LINK' || node.tagName === 'STYLE') {
                                 try { if (node.sheet && node.sheet.cssRules) return true; } catch (e) { return false; }
@@ -1573,6 +1574,7 @@
                   
                 document.getElementById('preview-modal').classList.remove('hidden');
                 document.getElementById('preview-modal').classList.add('flex');
+                if(window.lucide) window.lucide.createIcons(); // วาดไอคอนใหม่หลังจากเปิด Modal
                 updateScrollLock();
             } catch (e) { 
                 showToast("การพรีวิวล้มเหลว: " + e.message, true); 
@@ -1596,10 +1598,18 @@
                 });
             } else {
                 const { jsPDF } = window.jspdf;
-                const pdf = new jsPDF('l', 'px', [1123, 794]);
+                // เปิดใช้งานการบีบอัดไฟล์ PDF (compress: true)
+                const pdf = new jsPDF({
+                    orientation: 'l',
+                    unit: 'px',
+                    format: [1123, 794],
+                    compress: true
+                });
+
                 window.cachedExportDataURLs.forEach((url, idx) => {
                     if (idx > 0) pdf.addPage([1123, 794], 'l');
-                    pdf.addImage(url, 'PNG', 0, 0, 1123, 794);
+                    // ใช้การประมวลผลแบบ 'FAST' เพื่อช่วยลดขนาดไฟล์รูปภาพใน PDF
+                    pdf.addImage(url, 'PNG', 0, 0, 1123, 794, undefined, 'FAST');
                 });
                 pdf.save(`${baseName}.pdf`);
             }
