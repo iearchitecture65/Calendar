@@ -716,10 +716,12 @@
                 ics += `DTSTART;TZID=Asia/Bangkok:${dtStart}\n`;
                 ics += `DTEND;TZID=Asia/Bangkok:${dtEnd}\n`;
                 ics += `SUMMARY:${e.title}\n`;
-                if (e.description) {
-                    const desc = e.description.replace(/\n/g, '\\n').replace(/,/g, '\\,');
-                    ics += `DESCRIPTION:${desc}\n`;
-                }
+                
+                let fullDesc = e.description ? e.description + '\n\n' : '';
+                fullDesc += `[ดูต้นฉบับที่ ${window.location.href}]`;
+                const desc = fullDesc.replace(/\n/g, '\\n').replace(/,/g, '\\,');
+                ics += `DESCRIPTION:${desc}\n`;
+                
                 ics += "END:VEVENT\n";
             });
             
@@ -1335,7 +1337,11 @@
                 endT = '235900';
             }
             const endD = (e.endDate ? e.endDate.replace(/-/g, '') : startD);
-            const googleCalUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(e.title)}&dates=${startD}T${startT}/${endD}T${endT}&details=${encodeURIComponent(e.description || '')}&ctz=Asia/Bangkok`;
+            
+            let fullDesc = e.description ? e.description + '\n\n' : '';
+            fullDesc += `[ดูต้นฉบับที่ ${window.location.href}]`;
+
+            const googleCalUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(e.title)}&dates=${startD}T${startT}/${endD}T${endT}&details=${encodeURIComponent(fullDesc)}&ctz=Asia/Bangkok`;
             
             const gcalLink = document.getElementById('view-ev-gcal-link');
             if (gcalLink) gcalLink.href = googleCalUrl;
