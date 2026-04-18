@@ -718,7 +718,7 @@
                 ics += `SUMMARY:${e.title}\n`;
                 
                 let fullDesc = e.description ? e.description + '\n\n' : '';
-                fullDesc += `[ดูต้นฉบับที่ ${window.location.href}]`;
+                fullDesc += `[ ดูต้นฉบับที่ ${window.location.href} ]`;
                 const desc = fullDesc.replace(/\n/g, '\\n').replace(/,/g, '\\,');
                 ics += `DESCRIPTION:${desc}\n`;
                 
@@ -1339,7 +1339,7 @@
             const endD = (e.endDate ? e.endDate.replace(/-/g, '') : startD);
             
             let fullDesc = e.description ? e.description + '\n\n' : '';
-            fullDesc += `[ดูต้นฉบับที่ ${window.location.href}]`;
+            fullDesc += `[ ดูต้นฉบับที่ ${window.location.href} ]`;
 
             const googleCalUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(e.title)}&dates=${startD}T${startT}/${endD}T${endT}&details=${encodeURIComponent(fullDesc)}&ctz=Asia/Bangkok`;
             
