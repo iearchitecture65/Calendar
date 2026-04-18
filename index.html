@@ -1075,6 +1075,36 @@
             triggerUserSync(events); 
         };
 
+        window.stopSyncAll = async () => {
+            const btn = document.getElementById('btn-stop-sync');
+            const icon = document.getElementById('stop-sync-icon');
+            if(btn && icon) {
+                btn.disabled = true;
+                icon.classList.remove('hidden');
+                icon.classList.add('animate-spin');
+                icon.setAttribute('data-lucide', 'loader-2');
+                btn.querySelector('span').innerText = 'กำลังลบข้อมูล...';
+                if(window.lucide) window.lucide.createIcons();
+            }
+
+            if (accessToken) {
+                const syncMap = getSyncMap();
+                for (const fbId in syncMap) {
+                    try { await fetchGoogleAPI('DELETE', `/${syncMap[fbId]}`); } catch(e) {}
+                }
+                if (window.google) {
+                    try { google.accounts.oauth2.revoke(accessToken, () => {}); } catch(e){}
+                }
+            }
+            accessToken = null;
+            localStorage.removeItem('gcal_sync_time');
+            localStorage.removeItem('gcal_sync_map');
+
+            closeSyncModal();
+            window.updateMainSyncButtonUI(false);
+            showToast("ยกเลิกการซิงก์และลบข้อมูลออกจากปฏิทินเรียบร้อยแล้ว");
+        };
+
         window.handleSyncStatus = (result) => {
             const btn = document.getElementById('btn-confirm-gcal-sync');
             const icon = document.getElementById('sync-btn-icon');
@@ -1864,7 +1894,7 @@
         }
 
         function updateAdminUI() {
-            const l = document.getElementById('admin-lock-icon');
+            const icon = document.getElementById('admin-lock-icon');
             const hist = document.getElementById('admin-history-section');
             const exp = document.getElementById('admin-export-buttons');
             const warn = document.getElementById('site-offline-warning');
