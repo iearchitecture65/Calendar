@@ -232,7 +232,7 @@
                 </div>
                 <div id="admin-export-buttons" class="hidden fade-in mb-4 text-center">
                     <button onclick="openPreviewModal()" class="inline-flex items-center gap-2 px-4 py-1.5 bg-indigo-600 text-white hover:bg-indigo-700 rounded-xl text-[11px] font-semibold transition-colors shadow-sm w-full justify-center">
-                        <i data-lucide="printer" class="w-3.5 h-3.5"></i> พรีวิว & ส่งออก
+                        <i data-lucide="printer" class="w-3.5 h-3.5"></i> พรีวิว & ส่งออก (เฉพาะแอดมิน)
                     </button>
                 </div>
                 <div class="grid grid-cols-7 gap-1 mb-2" id="calendar-days-header"></div>
@@ -433,6 +433,13 @@
                 <div id="view-ev-links-section" class="space-y-3 hidden">
                     <h4 class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">ลิงก์และปุ่มกด</h4>
                     <div id="view-ev-links-container" class="flex flex-col gap-2"></div>
+                </div>
+                
+                <!-- Google Calendar Button for Single Event -->
+                <div class="pt-4 border-t border-slate-100">
+                    <a id="view-ev-gcal-link" href="#" target="_blank" class="w-full flex items-center justify-center gap-2 p-3 bg-blue-50 border border-blue-200 text-blue-600 rounded-xl hover:bg-blue-100 transition-colors shadow-sm font-bold text-sm">
+                        <i data-lucide="calendar-plus" class="w-4 h-4"></i> เพิ่มนัดหมายนี้ลง Google Calendar
+                    </a>
                 </div>
             </div>
             <div class="p-6 border-t border-slate-50 bg-slate-50/50 text-center">
@@ -680,6 +687,55 @@
             });
         };
         
+        // --- Sync (ICS) Function for General Users ---
+        window.exportAllToICS = () => {
+            if (!events || events.length === 0) {
+                showToast("ไม่มีกิจกรรมให้ดาวน์โหลด", true);
+                return;
+            }
+            
+            let ics = "BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//Moranasatect//Appointment System//EN\nCALSCALE:GREGORIAN\n";
+            
+            events.forEach(e => {
+                const startDate = e.date.replace(/-/g, '');
+                const startTime = e.time ? e.time.replace(':', '') + '00' : '000000';
+                const dtStart = `${startDate}T${startTime}`;
+                
+                let dtEnd = '';
+                if (e.endDate && e.endDate !== e.date) {
+                    dtEnd = e.endDate.replace(/-/g, '') + 'T' + (e.time ? e.time.replace(':', '') + '00' : '235900');
+                } else {
+                    let h = parseInt(e.time.split(':')[0]);
+                    let m = e.time.split(':')[1];
+                    h = (h + 1) % 24;
+                    const endH = String(h).padStart(2, '0');
+                    dtEnd = `${startDate}T${endH}${m}00`;
+                }
+
+                ics += "BEGIN:VEVENT\n";
+                ics += `DTSTART;TZID=Asia/Bangkok:${dtStart}\n`;
+                ics += `DTEND;TZID=Asia/Bangkok:${dtEnd}\n`;
+                ics += `SUMMARY:${e.title}\n`;
+                if (e.description) {
+                    const desc = e.description.replace(/\n/g, '\\n').replace(/,/g, '\\,');
+                    ics += `DESCRIPTION:${desc}\n`;
+                }
+                ics += "END:VEVENT\n";
+            });
+            
+            ics += "END:VCALENDAR";
+
+            const blob = new Blob([ics], { type: 'text/calendar;charset=utf-8' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = 'ตารางนัดหมายทั้งหมด.ics';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            showToast("ดาวน์โหลดไฟล์ .ics สำเร็จ! (นำไป Import ใน Google Calendar ได้เลย)");
+        };
+
         // --- Color Picker Function ---
         window.toggleColorPicker = (e) => {
             if(e) e.stopPropagation();
@@ -1268,6 +1324,21 @@
             } else {
                 linksSection.classList.add('hidden');
             }
+
+            // Google Calendar Single URL Generate
+            const startD = e.date.replace(/-/g, '');
+            const startT = e.time ? e.time.replace(':', '') + '00' : '000000';
+            let endT = '';
+            if (e.time) {
+                endT = String((parseInt(e.time.split(':')[0]) + 1) % 24).padStart(2, '0') + e.time.split(':')[1] + '00';
+            } else {
+                endT = '235900';
+            }
+            const endD = (e.endDate ? e.endDate.replace(/-/g, '') : startD);
+            const googleCalUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(e.title)}&dates=${startD}T${startT}/${endD}T${endT}&details=${encodeURIComponent(e.description || '')}&ctz=Asia/Bangkok`;
+            
+            const gcalLink = document.getElementById('view-ev-gcal-link');
+            if (gcalLink) gcalLink.href = googleCalUrl;
 
             document.getElementById('event-view-modal').classList.remove('hidden');
             document.getElementById('event-view-modal').classList.add('flex');
