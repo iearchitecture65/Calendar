@@ -1693,6 +1693,9 @@
             const count = document.querySelectorAll('.task-recipient-cb:checked').length;
             const countEl = document.getElementById('task-recipients-count');
             if(countEl) countEl.innerText = count;
+
+            const btnText = document.getElementById('save-task-text');
+            if(btnText) btnText.innerText = `บันทึกและส่งเข้าคิว (ส่งถึง ${count} คน)`;
         };
 
         // 🌟 แยกส่วนอัปเดตหัวข้อ และระบบ Preview 🌟
@@ -1967,7 +1970,7 @@
                 btn.classList.remove('opacity-50');
                 icon.setAttribute('data-lucide', 'save');
                 icon.classList.remove('animate-spin');
-                text.innerText = 'บันทึกและส่งเข้าคิว';
+                window.updateTaskRecipientsCount();
                 if(window.lucide) window.lucide.createIcons();
             }
         };
