@@ -336,6 +336,21 @@
         </div>
     </div>
 
+    <!-- 🌟 Custom Confirm Modal 🌟 -->
+    <div id="custom-confirm-modal" class="fixed inset-0 z-[9999] items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm hidden">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 fade-in text-center border border-slate-100 flex flex-col items-center">
+            <div id="confirm-icon-container" class="w-14 h-14 rounded-full flex items-center justify-center mb-4 bg-rose-50 text-rose-600">
+                <i data-lucide="alert-triangle" class="w-7 h-7" id="confirm-modal-icon"></i>
+            </div>
+            <h3 id="confirm-modal-title" class="text-lg font-bold text-slate-800 mb-2">ยืนยันการดำเนินการ</h3>
+            <p id="confirm-modal-desc" class="text-slate-500 text-xs mb-6 leading-relaxed">คุณแน่ใจหรือไม่ที่จะดำเนินการนี้?</p>
+            <div class="flex gap-2 w-full">
+                <button id="btn-confirm-cancel" class="flex-1 py-2.5 bg-slate-100 text-slate-600 rounded-xl text-sm font-bold hover:bg-slate-200 transition-colors">ยกเลิก</button>
+                <button id="btn-confirm-ok" class="flex-1 py-2.5 rounded-xl text-sm font-bold transition-colors shadow-sm flex justify-center items-center gap-1.5 bg-rose-600 text-white hover:bg-rose-700">ยืนยัน</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Confirmation Sync Modal -->
     <div id="sync-confirm-modal" class="fixed inset-0 z-[160] items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm hidden">
         <div class="bg-white rounded-2xl shadow-2xl w-full max-w-xs p-6 fade-in text-center border border-slate-100">
@@ -961,6 +976,8 @@
         };
 
         window.stopSyncAll = async () => {
+            if(!await window.showConfirmModal("ยืนยันการยกเลิกซิงก์", "ยกเลิกการเชื่อมต่อและลบกิจกรรมที่เคยซิงก์ออกจาก Google Calendar ของคุณใช่หรือไม่?")) return;
+            
             const btn = document.getElementById('btn-stop-sync');
             const icon = document.getElementById('stop-sync-icon');
             if(btn && icon) {
@@ -988,6 +1005,50 @@
             closeSyncModal();
             window.updateMainSyncButtonUI(false);
             showToast("ยกเลิกการซิงก์และลบข้อมูลออกจากปฏิทินเรียบร้อยแล้ว");
+        };
+
+        // 🌟 Custom Confirm Modal Function 🌟
+        window.showConfirmModal = (title, message, isDanger = true) => {
+            return new Promise((resolve) => {
+                const modal = document.getElementById('custom-confirm-modal');
+                const titleEl = document.getElementById('confirm-modal-title');
+                const descEl = document.getElementById('confirm-modal-desc');
+                const btnOk = document.getElementById('btn-confirm-ok');
+                const btnCancel = document.getElementById('btn-confirm-cancel');
+                const iconContainer = document.getElementById('confirm-icon-container');
+                const iconEl = document.getElementById('confirm-modal-icon');
+
+                titleEl.innerText = title;
+                descEl.innerHTML = message;
+
+                if (isDanger) {
+                    iconContainer.className = "w-14 h-14 rounded-full flex items-center justify-center mb-4 bg-rose-50 text-rose-600";
+                    iconEl.setAttribute('data-lucide', 'alert-triangle');
+                    btnOk.className = "flex-1 py-2.5 rounded-xl text-sm font-bold transition-colors shadow-sm flex justify-center items-center gap-1.5 bg-rose-600 text-white hover:bg-rose-700";
+                } else {
+                    iconContainer.className = "w-14 h-14 rounded-full flex items-center justify-center mb-4 bg-indigo-50 text-indigo-600";
+                    iconEl.setAttribute('data-lucide', 'help-circle');
+                    btnOk.className = "flex-1 py-2.5 rounded-xl text-sm font-bold transition-colors shadow-sm flex justify-center items-center gap-1.5 bg-indigo-600 text-white hover:bg-indigo-700";
+                }
+                
+                if (window.lucide) window.lucide.createIcons();
+
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+                
+                const cleanup = () => {
+                    modal.classList.add('hidden');
+                    modal.classList.remove('flex');
+                    btnOk.removeEventListener('click', onOk);
+                    btnCancel.removeEventListener('click', onCancel);
+                };
+
+                const onOk = () => { cleanup(); resolve(true); };
+                const onCancel = () => { cleanup(); resolve(false); };
+
+                btnOk.addEventListener('click', onOk);
+                btnCancel.addEventListener('click', onCancel);
+            });
         };
 
         const firebaseConfig = {
@@ -1236,7 +1297,7 @@
         };
 
         window.deleteStudent = async (studentId) => {
-            if(!confirm(`ยืนยันการลบนักศึกษารหัส ${studentId}?`)) return;
+            if(!await window.showConfirmModal("ยืนยันการลบ", `ยืนยันการลบนักศึกษารหัส ${studentId}?`)) return;
             let currentList = window.globalStudentList.filter(s => s.id !== studentId);
             try {
                 await setDoc(doc(db, 'settings', 'student_list'), { students: currentList });
@@ -1251,7 +1312,7 @@
             const checkedCbs = document.querySelectorAll('.student-list-cb:checked');
             if (checkedCbs.length === 0) return;
 
-            if(!confirm(`ยืนยันการลบนักศึกษาที่เลือกจำนวน ${checkedCbs.length} รายการ?`)) return;
+            if(!await window.showConfirmModal("ยืนยันการลบที่เลือก", `ยืนยันการลบนักศึกษาที่เลือกจำนวน ${checkedCbs.length} รายการ?`)) return;
 
             const idsToDelete = Array.from(checkedCbs).map(cb => cb.value);
             let currentList = window.globalStudentList.filter(s => !idsToDelete.includes(s.id));
@@ -1267,7 +1328,7 @@
         };
 
         window.clearAllStudents = async () => {
-            if(!confirm("ยืนยันการล้างรายชื่อนักศึกษาทั้งหมดในระบบ?")) return;
+            if(!await window.showConfirmModal("ล้างรายชื่อทั้งหมด", "ยืนยันการล้างรายชื่อนักศึกษาทั้งหมดในระบบ?")) return;
             try {
                 await setDoc(doc(db, 'settings', 'student_list'), { students: [] });
                 showToast('ล้างรายชื่อทั้งหมดสำเร็จ');
@@ -1386,7 +1447,7 @@
 
                 let countdownHtml = '';
                 if (!isHistory && !task.isCancelled && task.targetScheduleTimeMs) {
-                    countdownHtml = `<div class="w-full mt-2"><div class="task-countdown text-[10px] font-bold text-indigo-600 bg-indigo-50 border border-indigo-100 px-2 py-1 rounded inline-flex items-center gap-1 shadow-sm" data-target="${task.targetScheduleTimeMs}"><i data-lucide="timer" class="w-3 h-3"></i> คำนวณเวลา...</div></div>`;
+                    countdownHtml = `<div class="w-full mt-1.5"><div class="task-countdown text-[10px] font-bold text-slate-500 inline-flex items-center gap-1.5" data-target="${task.targetScheduleTimeMs}"><i data-lucide="timer" class="w-3.5 h-3.5 text-slate-400 animate-pulse"></i> คำนวณเวลา...</div></div>`;
                 }
 
                 return `
@@ -1440,7 +1501,7 @@
         };
 
         window.clearEmailHistory = async () => {
-            if(!confirm("ยืนยันการล้างประวัติการส่งอีเมลทั้งหมด? (คิวที่รอส่งจะไม่ถูกลบ)")) return;
+            if(!await window.showConfirmModal("ล้างประวัติอีเมล", "ยืนยันการล้างประวัติการส่งอีเมลทั้งหมด?<br><span class='text-[10px] text-rose-500'>*คิวที่รอส่งจะไม่ถูกลบ</span>")) return;
             
             const now = Date.now();
             const historyTasks = window.globalEmailTasks.filter(task => {
@@ -1804,7 +1865,7 @@
         };
 
         window.deleteEmailTask = async (taskId) => {
-            if(!confirm("ยืนยันการลบคิว/ประวัติอีเมลนี้?")) return;
+            if(!await window.showConfirmModal("ยืนยันการลบ", "ยืนยันการลบคิว/ประวัติอีเมลนี้?")) return;
             
             try {
                 await deleteDoc(doc(db, 'email_tasks', taskId));
@@ -1844,7 +1905,8 @@
                     if(h > 0 || d > 0) timeStr += `${h} ชม. `;
                     timeStr += `${m} นาที ${s} วินาที`;
                     
-                    el.innerHTML = `<i data-lucide="timer" class="w-3 h-3"></i> ⏳ จะส่งในอีก ${timeStr}`;
+                    el.innerHTML = `<i data-lucide="timer" class="w-3.5 h-3.5 text-slate-400 animate-pulse"></i> จะส่งในอีก ${timeStr}`;
+                    if(window.lucide) window.lucide.createIcons({root: el});
                 }
             });
             if (needsRender && typeof window.renderEmailTasks === 'function') {
@@ -2409,7 +2471,7 @@
         }
 
         function updateScrollLock() {
-            const modals = ['details-modal', 'event-view-modal', 'auth-modal', 'preview-modal', 'announcement-modal', 'admin-announcement-modal', 'upcoming-modal', 'sync-confirm-modal', 'email-modal'];
+            const modals = ['details-modal', 'event-view-modal', 'auth-modal', 'preview-modal', 'announcement-modal', 'admin-announcement-modal', 'upcoming-modal', 'sync-confirm-modal', 'email-modal', 'custom-confirm-modal'];
             // Removed overlay check to fix visual issue
             const isAnyOpen = modals.some(id => {
                 const el = document.getElementById(id);
@@ -3273,7 +3335,7 @@
         }
 
         async function handleDeleteEvent(id) {
-            if (isAdmin && confirm("ยืนยันการลบ?")) {
+            if (isAdmin && await window.showConfirmModal("ยืนยันการลบกิจกรรม", "คุณต้องการลบกิจกรรมนี้ออกจากระบบใช่หรือไม่?")) {
                 try {
                     await deleteDoc(doc(db, 'calendar_events', id));
                     showToast('ลบกิจกรรมสำเร็จ');
