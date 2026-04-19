@@ -267,7 +267,7 @@
                                 <div class="p-2 border-b border-sky-50 bg-white flex flex-col gap-2">
                                     <input type="text" id="search-task-recipient" oninput="searchTaskRecipients()" placeholder="ค้นหารหัส หรือ ชื่อ..." class="w-full px-2 py-1.5 bg-slate-50 border border-slate-200 rounded text-xs focus:outline-none focus:ring-2 focus:ring-sky-500/20">
                                     <label class="flex items-center gap-1.5 text-[11px] font-bold text-slate-600 cursor-pointer w-full bg-slate-50 px-2 py-1.5 rounded hover:bg-slate-100 transition-colors border border-slate-100 shadow-sm">
-                                        <input type="checkbox" id="check-all-task-recipients" onchange="toggleTaskRecipients(this.checked)" class="rounded text-sky-600" checked>
+                                        <input type="checkbox" id="check-all-task-recipients" onchange="toggleTaskRecipients(this.checked)" class="rounded text-sky-600">
                                         <span id="check-all-task-label">เลือกทั้งหมดในระบบ</span>
                                     </label>
                                 </div>
@@ -1603,9 +1603,10 @@
                 searchInp.value = ''; 
                 window.searchTaskRecipients(); 
             }
+            
             const checkAllInp = document.getElementById('check-all-task-recipients');
             if(checkAllInp) {
-                checkAllInp.checked = true;
+                checkAllInp.checked = false; // เปลี่ยนเป็น false เพื่อไม่ให้เลือกทั้งหมดตั้งแต่ต้น
             }
 
             // 🌟 Setup ReadOnly UI if the task is in history 🌟
@@ -1673,7 +1674,7 @@
                 document.getElementById('task-event-select').value = '';
                 document.getElementById('task-schedule-mode').value = 'now';
                 document.querySelectorAll('.task-recipient-cb').forEach(cb => {
-                    cb.checked = true;
+                    cb.checked = false; // เปลี่ยนเป็น false เพื่อให้ว่างเปล่าตอนสร้างใหม่
                     cb.disabled = false;
                 });
             }
