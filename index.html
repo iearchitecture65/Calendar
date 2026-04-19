@@ -197,13 +197,13 @@
                 
                 <!-- TAB 1: EMAIL TASKS LIST -->
                 <div id="tab-tasks" class="absolute inset-0 overflow-y-auto p-4 sm:p-6 space-y-4">
-                    <div class="flex justify-between items-center mb-2">
-                        <h3 class="font-bold text-slate-700">คิวงานทั้งหมด</h3>
+                    <div class="flex justify-between items-center mb-2 border-b border-slate-200 pb-2">
+                        <h3 class="font-bold text-slate-700 text-lg">จัดการคิวงาน</h3>
                         <button onclick="openEmailTaskForm()" class="px-4 py-2 bg-sky-600 text-white rounded-lg text-xs font-bold hover:bg-sky-700 shadow-sm flex items-center gap-1 transition-colors">
                             <i data-lucide="plus" class="w-4 h-4"></i> สร้างคิวใหม่
                         </button>
                     </div>
-                    <div id="email-tasks-container" class="space-y-3">
+                    <div id="email-tasks-container" class="space-y-6">
                         <!-- Tasks rendered here -->
                         <div class="text-center py-10 text-slate-400 text-xs">ไม่มีรายการคิวอีเมล</div>
                     </div>
@@ -224,11 +224,18 @@
                         <div class="space-y-3 flex flex-col h-full max-h-full">
                             <div class="flex justify-between items-end">
                                 <h3 class="font-bold text-slate-700 flex items-center gap-1.5"><i data-lucide="users" class="w-4 h-4 text-sky-500"></i> รายชื่อในระบบ (<span id="student-count">0</span>)</h3>
-                                <button onclick="clearAllStudents()" class="text-[10px] font-bold text-rose-500 hover:text-rose-700 underline">ล้างทั้งหมด</button>
+                                <div class="flex items-center gap-2">
+                                    <button onclick="deleteSelectedStudents()" id="btn-delete-selected-students" class="text-[10px] font-bold text-rose-600 bg-rose-50 border border-rose-100 px-2 py-0.5 rounded hover:bg-rose-100 hidden transition-all">ลบที่เลือก</button>
+                                    <button onclick="clearAllStudents()" class="text-[10px] font-bold text-rose-500 hover:text-rose-700 underline">ล้างทั้งหมด</button>
+                                </div>
                             </div>
                             <div class="flex-1 border border-slate-200 rounded-xl overflow-hidden flex flex-col bg-slate-50">
-                                <div class="p-2 border-b border-slate-200 bg-white">
+                                <div class="p-2 border-b border-slate-200 bg-white flex flex-col gap-2">
                                     <input type="text" id="search-student" oninput="renderStudentList()" placeholder="ค้นหารหัส หรือ ชื่อ..." class="w-full px-2 py-1.5 bg-slate-50 border border-slate-200 rounded text-xs focus:outline-none focus:ring-2 focus:ring-sky-500/20">
+                                    <label class="flex items-center gap-1.5 text-[11px] font-bold text-slate-600 cursor-pointer w-full bg-slate-50 px-2 py-1.5 rounded hover:bg-slate-100 transition-colors border border-slate-100 shadow-sm">
+                                        <input type="checkbox" id="check-all-students" onchange="toggleAllStudents(this.checked)" class="rounded text-sky-600">
+                                        <span id="check-all-students-label">เลือกทั้งหมด</span>
+                                    </label>
                                 </div>
                                 <div id="saved-students-list" class="flex-1 overflow-y-auto p-2 space-y-1">
                                     <!-- Saved students -->
@@ -242,7 +249,7 @@
                 <div id="email-task-form-view" class="absolute inset-0 bg-white z-10 flex flex-col hidden transform transition-transform duration-300 translate-y-full">
                     <div class="flex justify-between items-center px-5 py-3 border-b border-slate-100 bg-slate-50 shrink-0">
                         <h3 class="font-bold text-slate-700" id="task-form-title">ตั้งค่ารายการส่งอีเมล</h3>
-                        <button onclick="closeEmailTaskForm()" class="text-slate-400 hover:text-slate-600 text-xs font-bold flex items-center gap-1 bg-white px-2 py-1 rounded border border-slate-200 shadow-sm transition-colors"><i data-lucide="arrow-left" class="w-3 h-3"></i> กลับ</button>
+                        <button onclick="closeEmailTaskForm()" id="task-form-cancel-btn" class="text-slate-400 hover:text-slate-600 text-xs font-bold flex items-center gap-1 bg-white px-2 py-1 rounded border border-slate-200 shadow-sm transition-colors"><i data-lucide="arrow-left" class="w-3 h-3"></i> กลับ</button>
                     </div>
                     
                     <div class="flex-1 overflow-y-auto p-4 sm:p-6">
@@ -257,10 +264,11 @@
                                         <span class="text-[10px] bg-white px-2 py-0.5 rounded-full border border-sky-200 text-sky-600 shadow-sm"><span id="task-recipients-count">0</span> คน</span>
                                     </label>
                                 </div>
-                                <div class="p-2 border-b border-sky-50 bg-white flex items-center gap-2">
-                                    <label class="flex items-center gap-1.5 text-[11px] font-bold text-slate-600 cursor-pointer w-full bg-slate-50 px-2 py-1.5 rounded hover:bg-slate-100 transition-colors">
-                                        <input type="checkbox" id="check-all-task-recipients" onchange="toggleTaskRecipients(this.checked)" class="rounded text-sky-600">
-                                        เลือกทั้งหมดในระบบ
+                                <div class="p-2 border-b border-sky-50 bg-white flex flex-col gap-2">
+                                    <input type="text" id="search-task-recipient" oninput="searchTaskRecipients()" placeholder="ค้นหารหัส หรือ ชื่อ..." class="w-full px-2 py-1.5 bg-slate-50 border border-slate-200 rounded text-xs focus:outline-none focus:ring-2 focus:ring-sky-500/20">
+                                    <label class="flex items-center gap-1.5 text-[11px] font-bold text-slate-600 cursor-pointer w-full bg-slate-50 px-2 py-1.5 rounded hover:bg-slate-100 transition-colors border border-slate-100 shadow-sm">
+                                        <input type="checkbox" id="check-all-task-recipients" onchange="toggleTaskRecipients(this.checked)" class="rounded text-sky-600" checked>
+                                        <span id="check-all-task-label">เลือกทั้งหมดในระบบ</span>
                                     </label>
                                 </div>
                                 <div id="task-recipients-list" class="flex-1 overflow-y-auto p-2 space-y-1 bg-white">
@@ -316,8 +324,8 @@
                         </div>
                     </div>
                     
-                    <div class="p-4 border-t border-slate-100 bg-slate-50 flex gap-2 shrink-0">
-                        <button type="button" onclick="closeEmailTaskForm()" class="flex-1 py-3 bg-white border border-slate-200 text-slate-600 rounded-xl text-sm font-bold hover:bg-slate-100 transition-colors shadow-sm">ยกเลิก</button>
+                    <div class="p-4 border-t border-slate-100 bg-slate-50 flex gap-2 shrink-0" id="task-form-actions">
+                        <button type="button" onclick="closeEmailTaskForm()" id="btn-cancel-task" class="flex-1 py-3 bg-white border border-slate-200 text-slate-600 rounded-xl text-sm font-bold hover:bg-slate-100 transition-colors shadow-sm">ยกเลิก</button>
                         <button id="btn-save-email-task" onclick="saveEmailTask()" class="flex-[2] py-3 bg-sky-600 text-white rounded-xl text-sm font-bold hover:bg-sky-700 transition-colors shadow-sm flex justify-center items-center gap-1.5">
                             <i data-lucide="save" class="w-4 h-4" id="save-task-icon"></i> <span id="save-task-text">บันทึกและส่งเข้าคิว</span>
                         </button>
@@ -1040,6 +1048,32 @@
             }, 3000);
         }
 
+        // 🌟 Add the missing updateAdminAnncDropdown function to fix console error
+        window.updateAdminAnncDropdown = () => {
+            const evSelect = document.getElementById('cfg-annc-event-id');
+            if(!evSelect) return;
+            
+            const currentVal = popupConfig.event_id || evSelect.value;
+            const sortedEvents = [...events].sort((a, b) => b.date.localeCompare(a.date));
+            
+            evSelect.innerHTML = `
+                <option value="">-- ไม่แนบกิจกรรม --</option>
+                <option value="TODAY_EVENTS">-- 🌟 แสดงกิจกรรมของวันนี้ --</option>
+            `;
+            sortedEvents.forEach(e => {
+                const opt = document.createElement('option');
+                opt.value = e.id;
+                opt.innerText = `[${e.date}] ${e.title}`;
+                evSelect.appendChild(opt);
+            });
+            
+            if (currentVal && (currentVal === 'TODAY_EVENTS' || events.find(e => e.id === currentVal))) {
+                evSelect.value = currentVal;
+            } else {
+                evSelect.value = '';
+            }
+        };
+
         window.toggleAdminModal = toggleAdminModal;
         window.handlePrevMonth = handlePrevMonth;
         window.handleNextMonth = handleNextMonth;
@@ -1212,6 +1246,26 @@
             }
         };
 
+        // 🌟 Add Delete Selected Students function
+        window.deleteSelectedStudents = async () => {
+            const checkedCbs = document.querySelectorAll('.student-list-cb:checked');
+            if (checkedCbs.length === 0) return;
+
+            if(!confirm(`ยืนยันการลบนักศึกษาที่เลือกจำนวน ${checkedCbs.length} รายการ?`)) return;
+
+            const idsToDelete = Array.from(checkedCbs).map(cb => cb.value);
+            let currentList = window.globalStudentList.filter(s => !idsToDelete.includes(s.id));
+
+            try {
+                await setDoc(doc(db, 'settings', 'student_list'), { students: currentList });
+                const checkAllBtn = document.getElementById('check-all-students');
+                if(checkAllBtn) checkAllBtn.checked = false;
+                showToast(`ลบรายชื่อสำเร็จ ${idsToDelete.length} รายการ`);
+            } catch(e) {
+                showToast("ลบไม่สำเร็จ", true);
+            }
+        };
+
         window.clearAllStudents = async () => {
             if(!confirm("ยืนยันการล้างรายชื่อนักศึกษาทั้งหมดในระบบ?")) return;
             try {
@@ -1222,35 +1276,63 @@
             }
         };
 
+        // 🌟 Modifying Student List Render for bulk actions
         window.renderStudentList = () => {
             const container = document.getElementById('saved-students-list');
             const countEl = document.getElementById('student-count');
             const q = (document.getElementById('search-student')?.value || '').toLowerCase();
+            const checkAllLabel = document.getElementById('check-all-students-label');
             
             if(!container) return;
 
             let filtered = window.globalStudentList;
             if (q) {
                 filtered = filtered.filter(s => s.id.includes(q) || s.name.toLowerCase().includes(q));
+                if(checkAllLabel) checkAllLabel.innerText = `เลือกที่ค้นพบ (${filtered.length})`;
+            } else {
+                if(checkAllLabel) checkAllLabel.innerText = `เลือกทั้งหมด`;
             }
 
             countEl.innerText = window.globalStudentList.length;
 
             if (filtered.length === 0) {
                 container.innerHTML = `<div class="text-center py-4 text-slate-400 text-xs">ไม่พบรายชื่อนักศึกษา</div>`;
+                window.updateStudentDeleteBtn();
                 return;
             }
 
             container.innerHTML = filtered.map(s => `
-                <div class="flex justify-between items-center bg-white p-2 border border-slate-100 rounded hover:border-sky-200 transition-colors shadow-sm">
-                    <div class="flex flex-col">
-                        <span class="text-xs font-bold text-slate-700">${s.id} ${s.name}</span>
-                        <span class="text-[10px] text-slate-400">${s.email}</span>
+                <label class="flex justify-between items-center bg-white p-2 border border-slate-100 rounded hover:border-sky-200 transition-colors shadow-sm cursor-pointer">
+                    <div class="flex items-center gap-2">
+                        <input type="checkbox" value="${s.id}" class="student-list-cb rounded text-sky-600 focus:ring-sky-500" onchange="updateStudentDeleteBtn()">
+                        <div class="flex flex-col">
+                            <span class="text-xs font-bold text-slate-700">${s.id} ${s.name}</span>
+                            <span class="text-[10px] text-slate-400">${s.email}</span>
+                        </div>
                     </div>
-                    <button onclick="deleteStudent('${s.id}')" class="text-rose-400 hover:text-rose-600 p-1"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
-                </div>
+                    <button type="button" onclick="event.preventDefault(); window.deleteStudent('${s.id}')" class="text-rose-400 hover:text-rose-600 p-1"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
+                </label>
             `).join('');
             if(window.lucide) window.lucide.createIcons();
+            window.updateStudentDeleteBtn();
+        };
+
+        window.toggleAllStudents = (checked) => {
+            document.querySelectorAll('.student-list-cb').forEach(cb => cb.checked = checked);
+            window.updateStudentDeleteBtn();
+        };
+
+        window.updateStudentDeleteBtn = () => {
+            const checkedCount = document.querySelectorAll('.student-list-cb:checked').length;
+            const btn = document.getElementById('btn-delete-selected-students');
+            if(btn) {
+                if (checkedCount > 0) {
+                    btn.classList.remove('hidden');
+                    btn.innerText = `ลบที่เลือก (${checkedCount})`;
+                } else {
+                    btn.classList.add('hidden');
+                }
+            }
         };
 
         window.renderEmailTasks = () => {
@@ -1262,7 +1344,26 @@
                 return;
             }
 
-            container.innerHTML = window.globalEmailTasks.map(task => {
+            const now = Date.now();
+            const pendingTasks = [];
+            const historyTasks = [];
+
+            // จัดกลุ่มว่าเป็น Pending หรือ Sent History
+            window.globalEmailTasks.forEach(task => {
+                let isSent = false;
+                if (task.isCancelled) {
+                    isSent = true;
+                } else if (task.scheduleMode === 'now') {
+                    isSent = true;
+                } else if (task.targetScheduleTimeMs && now >= task.targetScheduleTimeMs) {
+                    isSent = true;
+                }
+                
+                if (isSent) historyTasks.push(task);
+                else pendingTasks.push(task);
+            });
+
+            const renderTaskCard = (task, isHistory) => {
                 let schedText = "ส่งทันที";
                 if(task.scheduleMode === 'specific_time') schedText = `ตั้งเวลา: ${task.scheduleDate} ${task.scheduleTime}`;
                 else if(task.scheduleMode === 'before_event') schedText = `ก่อนกิจกรรม ${task.scheduleHours} ชม. ${task.scheduleMins} นาที`;
@@ -1274,27 +1375,131 @@
                     if(found) evName = found.title;
                 }
 
+                let statusBadge = '';
+                if (task.isCancelled) {
+                    statusBadge = `<span class="bg-rose-50 text-rose-600 px-2 py-0.5 rounded border border-rose-100 flex items-center gap-1"><i data-lucide="x-circle" class="w-3 h-3"></i> ยกเลิก: ${escapeHTML(task.cancelReason)}</span>`;
+                } else if (isHistory) {
+                    statusBadge = `<span class="bg-emerald-50 text-emerald-600 px-2 py-0.5 rounded border border-emerald-100 flex items-center gap-1"><i data-lucide="check-circle-2" class="w-3 h-3"></i> ส่งแล้ว</span>`;
+                } else {
+                    statusBadge = `<span class="bg-amber-50 text-amber-600 px-2 py-0.5 rounded border border-amber-100 flex items-center gap-1"><i data-lucide="clock" class="w-3 h-3"></i> รอส่ง: ${schedText}</span>`;
+                }
+
+                let countdownHtml = '';
+                if (!isHistory && !task.isCancelled && task.targetScheduleTimeMs) {
+                    countdownHtml = `<div class="w-full mt-2"><div class="task-countdown text-[10px] font-bold text-indigo-600 bg-indigo-50 border border-indigo-100 px-2 py-1 rounded inline-flex items-center gap-1 shadow-sm" data-target="${task.targetScheduleTimeMs}"><i data-lucide="timer" class="w-3 h-3"></i> คำนวณเวลา...</div></div>`;
+                }
+
                 return `
-                <div class="bg-white p-4 border border-slate-200 rounded-xl shadow-sm flex flex-col sm:flex-row justify-between gap-4">
-                    <div>
+                <div class="bg-white p-4 border ${isHistory ? 'border-slate-100 bg-slate-50/50 opacity-80' : 'border-slate-200 shadow-sm'} rounded-xl flex flex-col sm:flex-row justify-between gap-4 transition-all">
+                    <div class="flex-1">
                         <h4 class="font-bold text-sm text-slate-800">${escapeHTML(task.subject) || '(ไม่มีหัวข้อ)'}</h4>
                         <div class="flex flex-wrap gap-2 mt-1.5 text-[10px] font-bold">
+                            ${statusBadge}
                             <span class="bg-sky-50 text-sky-600 px-2 py-0.5 rounded border border-sky-100 flex items-center gap-1"><i data-lucide="users" class="w-3 h-3"></i> ${task.recipients ? task.recipients.length : 0} คน</span>
-                            <span class="bg-amber-50 text-amber-600 px-2 py-0.5 rounded border border-amber-100 flex items-center gap-1"><i data-lucide="clock" class="w-3 h-3"></i> ${schedText}</span>
                             <span class="bg-indigo-50 text-indigo-600 px-2 py-0.5 rounded border border-indigo-100 flex items-center gap-1"><i data-lucide="paperclip" class="w-3 h-3"></i> ${escapeHTML(evName)}</span>
                         </div>
+                        ${countdownHtml}
                     </div>
                     <div class="flex items-center gap-2 shrink-0">
-                        <button onclick="openEmailTaskForm('${task.id}')" class="px-3 py-1.5 bg-slate-50 text-slate-600 border border-slate-200 hover:bg-slate-100 rounded-lg text-xs font-bold transition-colors">แก้ไข / ดู</button>
-                        <button onclick="deleteEmailTask('${task.id}')" class="px-3 py-1.5 bg-rose-50 text-rose-600 border border-rose-200 hover:bg-rose-100 rounded-lg text-xs font-bold transition-colors">ลบคิว</button>
+                        <button onclick="window.openEmailTaskForm('${task.id}', ${isHistory})" class="px-3 py-1.5 bg-slate-50 text-slate-600 border border-slate-200 hover:bg-slate-100 rounded-lg text-xs font-bold transition-colors">${isHistory ? '<i data-lucide="eye" class="w-3 h-3 inline"></i> ดูข้อมูล' : '<i data-lucide="edit-3" class="w-3 h-3 inline"></i> แก้ไข'}</button>
+                        <button onclick="window.deleteEmailTask('${task.id}')" class="px-3 py-1.5 bg-rose-50 text-rose-600 border border-rose-200 hover:bg-rose-100 rounded-lg text-xs font-bold transition-colors">ลบ</button>
                     </div>
                 </div>
                 `;
-            }).join('');
+            };
+
+            let html = '';
+            
+            if (pendingTasks.length > 0) {
+                html += `
+                <div class="mb-6">
+                    <h4 class="font-bold text-slate-700 mb-3 border-b border-slate-200 pb-2 flex items-center gap-2"><i data-lucide="hourglass" class="w-4 h-4 text-amber-500"></i> คิวที่กำลังรอส่ง (${pendingTasks.length})</h4>
+                    <div class="space-y-3">
+                        ${pendingTasks.map(t => renderTaskCard(t, false)).join('')}
+                    </div>
+                </div>
+                `;
+            }
+
+            if (historyTasks.length > 0) {
+                html += `
+                <div>
+                    <div class="flex justify-between items-center mb-3 border-b border-slate-200 pb-2">
+                        <h4 class="font-bold text-slate-700 flex items-center gap-2"><i data-lucide="history" class="w-4 h-4 text-slate-500"></i> ประวัติการส่งแล้ว (${historyTasks.length})</h4>
+                        <button onclick="window.clearEmailHistory()" class="text-[10px] font-bold text-rose-500 hover:text-rose-700 underline">ล้างประวัติทั้งหมด</button>
+                    </div>
+                    <div class="space-y-3">
+                        ${historyTasks.map(t => renderTaskCard(t, true)).join('')}
+                    </div>
+                </div>
+                `;
+            }
+
+            container.innerHTML = html;
             if(window.lucide) window.lucide.createIcons();
         };
 
-        window.openEmailTaskForm = (taskId = null) => {
+        window.clearEmailHistory = async () => {
+            if(!confirm("ยืนยันการล้างประวัติการส่งอีเมลทั้งหมด? (คิวที่รอส่งจะไม่ถูกลบ)")) return;
+            
+            const now = Date.now();
+            const historyTasks = window.globalEmailTasks.filter(task => {
+                if (task.isCancelled) return true;
+                if (task.scheduleMode === 'now') return true;
+                if (task.targetScheduleTimeMs && now >= task.targetScheduleTimeMs) return true;
+                return false;
+            });
+
+            if(historyTasks.length === 0) return;
+
+            try {
+                for (const task of historyTasks) {
+                    await deleteDoc(doc(db, 'email_tasks', task.id));
+                }
+                showToast(`ล้างประวัติ ${historyTasks.length} รายการสำเร็จ`);
+            } catch(e) {
+                showToast("ล้างประวัติไม่สำเร็จ: " + e.message, true);
+            }
+        };
+
+        // 🌟 Add search function for Email Task Recipients
+        window.searchTaskRecipients = () => {
+            const q = (document.getElementById('search-task-recipient')?.value || '').toLowerCase();
+            const labels = document.querySelectorAll('#task-recipients-list label.recipient-item');
+            let visibleCount = 0;
+            
+            labels.forEach(label => {
+                const text = label.innerText.toLowerCase();
+                if (text.includes(q)) {
+                    label.style.display = 'flex';
+                    visibleCount++;
+                } else {
+                    label.style.display = 'none';
+                }
+            });
+            
+            const checkAllLabel = document.getElementById('check-all-task-label');
+            if (checkAllLabel) {
+                if (q) {
+                    checkAllLabel.innerText = `เลือกที่ค้นพบ (${visibleCount} คน)`;
+                } else {
+                    checkAllLabel.innerText = `เลือกทั้งหมดในระบบ`;
+                }
+            }
+        };
+
+        window.toggleTaskRecipients = (checked) => {
+            const labels = document.querySelectorAll('#task-recipients-list label.recipient-item');
+            labels.forEach(label => {
+                if (label.style.display !== 'none') {
+                    const cb = label.querySelector('.task-recipient-cb:not([disabled])');
+                    if(cb) cb.checked = checked;
+                }
+            });
+            window.updateTaskRecipientsCount();
+        };
+
+        window.openEmailTaskForm = (taskId = null, isReadOnly = false) => {
             const formView = document.getElementById('email-task-form-view');
             formView.classList.remove('hidden');
             setTimeout(() => formView.classList.remove('translate-y-full'), 10);
@@ -1313,13 +1518,13 @@
                 evSelect.appendChild(opt);
             });
 
-            // Populate Student Checkboxes
+            // Populate Student Checkboxes with recipient-item class
             const stuContainer = document.getElementById('task-recipients-list');
             if (window.globalStudentList.length === 0) {
                 stuContainer.innerHTML = `<div class="p-4 text-center text-xs text-slate-400">ไม่มีรายชื่อนักศึกษาในระบบ<br>กรุณาเพิ่มรายชื่อในแท็บ "ฐานข้อมูลรายชื่อ" ก่อน</div>`;
             } else {
                 stuContainer.innerHTML = window.globalStudentList.map(s => `
-                    <label class="flex items-center gap-2 p-2 hover:bg-sky-50 rounded cursor-pointer border border-transparent hover:border-sky-100 transition-colors shadow-sm">
+                    <label class="recipient-item flex items-center gap-2 p-2 hover:bg-sky-50 rounded cursor-pointer border border-transparent hover:border-sky-100 transition-colors shadow-sm">
                         <input type="checkbox" class="task-recipient-cb rounded text-sky-600 focus:ring-sky-500" value="${s.id}" onchange="updateTaskRecipientsCount()">
                         <div class="flex flex-col">
                             <span class="text-xs font-bold text-slate-700">${s.id} ${s.name}</span>
@@ -1328,10 +1533,55 @@
                     </label>
                 `).join('');
             }
+            
+            // Reset Search on Form Open
+            const searchInp = document.getElementById('search-task-recipient');
+            if(searchInp) { 
+                searchInp.value = ''; 
+                window.searchTaskRecipients(); 
+            }
+            const checkAllInp = document.getElementById('check-all-task-recipients');
+            if(checkAllInp) {
+                checkAllInp.checked = true;
+            }
+
+            // 🌟 Setup ReadOnly UI if the task is in history 🌟
+            const inputs = [
+                document.getElementById('task-subject'),
+                document.getElementById('task-message'),
+                document.getElementById('task-event-select'),
+                document.getElementById('task-schedule-mode'),
+                document.getElementById('task-schedule-date'),
+                document.getElementById('task-schedule-time'),
+                document.getElementById('task-schedule-before-hours'),
+                document.getElementById('task-schedule-before-mins'),
+                document.getElementById('check-all-task-recipients'),
+                document.getElementById('search-task-recipient')
+            ];
+            
+            const btnSave = document.getElementById('btn-save-email-task');
+            const btnCancel = document.getElementById('btn-cancel-task');
+
+            if (isReadOnly) {
+                document.getElementById('task-form-title').innerHTML = `<i data-lucide="lock" class="w-4 h-4 text-slate-500 inline"></i> โหมดดูข้อมูล (รายการนี้ส่งไปแล้ว)`;
+                inputs.forEach(el => el && (el.disabled = true));
+                btnSave.classList.add('hidden');
+                btnCancel.innerText = 'ปิดหน้าต่าง';
+                btnCancel.classList.remove('flex-1');
+                btnCancel.classList.add('w-full');
+            } else {
+                document.getElementById('task-form-title').innerHTML = taskId 
+                    ? `<i data-lucide="edit" class="w-4 h-4 text-sky-500 inline"></i> แก้ไขรายการส่งอีเมล`
+                    : `<i data-lucide="plus" class="w-4 h-4 text-sky-500 inline"></i> ตั้งค่ารายการส่งอีเมลใหม่`;
+                inputs.forEach(el => el && (el.disabled = false));
+                btnSave.classList.remove('hidden');
+                btnCancel.innerText = 'ยกเลิก';
+                btnCancel.classList.add('flex-1');
+                btnCancel.classList.remove('w-full');
+            }
 
             // If Editing, fill values
             if (taskId) {
-                document.getElementById('task-form-title').innerHTML = `<i data-lucide="edit" class="w-4 h-4 text-sky-500 inline"></i> แก้ไขรายการส่งอีเมล`;
                 document.getElementById('task-id').value = taskId;
                 
                 const task = window.globalEmailTasks.find(t => t.id === taskId);
@@ -1349,17 +1599,20 @@
                         const taskRecipIds = task.recipients.map(r => r.id);
                         document.querySelectorAll('.task-recipient-cb').forEach(cb => {
                             cb.checked = taskRecipIds.includes(cb.value);
+                            if (isReadOnly) cb.disabled = true;
                         });
                     }
                 }
             } else {
-                document.getElementById('task-form-title').innerHTML = `<i data-lucide="plus" class="w-4 h-4 text-sky-500 inline"></i> ตั้งค่ารายการส่งอีเมลใหม่`;
                 document.getElementById('task-id').value = '';
                 document.getElementById('task-subject').value = '';
                 document.getElementById('task-message').value = '';
                 document.getElementById('task-event-select').value = '';
                 document.getElementById('task-schedule-mode').value = 'now';
-                document.querySelectorAll('.task-recipient-cb').forEach(cb => cb.checked = true);
+                document.querySelectorAll('.task-recipient-cb').forEach(cb => {
+                    cb.checked = true;
+                    cb.disabled = false;
+                });
             }
 
             window.toggleTaskScheduleUI();
@@ -1372,27 +1625,26 @@
             setTimeout(() => document.getElementById('email-task-form-view').classList.add('hidden'), 300);
         };
 
-        window.toggleTaskRecipients = (checked) => {
-            document.querySelectorAll('.task-recipient-cb').forEach(cb => cb.checked = checked);
-            window.updateTaskRecipientsCount();
-        };
-
         window.updateTaskRecipientsCount = () => {
             const count = document.querySelectorAll('.task-recipient-cb:checked').length;
             const countEl = document.getElementById('task-recipients-count');
             if(countEl) countEl.innerText = count;
         };
 
+        // 🌟 แก้ไข: ให้อัปเดตหัวข้ออัตโนมัติเมื่อเปลี่ยนกิจกรรมที่แนบ 🌟
         window.updateTaskSubjectFromEvent = () => {
             const evId = document.getElementById('task-event-select').value;
             const subjectInput = document.getElementById('task-subject');
-            if(!subjectInput.value) {
-                if (evId === 'TODAY_EVENTS') {
-                    subjectInput.value = "แจ้งนัดหมายกิจกรรมสำหรับวันนี้";
-                } else if (evId) {
-                    const ev = events.find(e => e.id === evId);
-                    if (ev) subjectInput.value = `[แจ้งนัดหมาย] ${ev.title}`;
-                }
+            
+            // ลบการเช็ค if(!subjectInput.value) ออก เพื่อให้เปลี่ยนหัวข้อตาม dropdown ได้เลย
+            if (evId === 'TODAY_EVENTS') {
+                subjectInput.value = "แจ้งนัดหมายกิจกรรมสำหรับวันนี้";
+            } else if (evId) {
+                const ev = events.find(e => e.id === evId);
+                if (ev) subjectInput.value = `[แจ้งนัดหมาย] ${ev.title}`;
+            } else {
+                // ถ้าไม่แนบกิจกรรม และถ้าอยากให้ล้างหัวข้อ สามารถใส่ subjectInput.value = ""; ได้
+                // แต่เพื่อความสะดวก ถ้าผู้ใช้เลือกกลับมาไม่แนบ ก็อาจจะคงหัวข้อล่าสุดไว้ หรือปล่อยว่าง
             }
         };
 
@@ -1442,6 +1694,19 @@
 
             let eventPayload = null;
             let targetScheduleTimeMs = new Date().getTime();
+            
+            // 🌟 1. ตรวจสอบการยกเลิกกรณี "ส่งของวันนี้" 🌟
+            let isCancelled = false;
+            let cancelReason = "";
+            if (eventId === 'TODAY_EVENTS') {
+                const todayStr = getTodayString();
+                const todayEvs = events.filter(e => isDateInRange(todayStr, e.date, e.endDate));
+                // ถ้าไม่มีกิจกรรมวันนี้ และ ไม่มีข้อความเพิ่มเติม = ไม่ส่ง
+                if (todayEvs.length === 0 && !message.trim()) {
+                    isCancelled = true;
+                    cancelReason = "ไม่มีกิจกรรมในวันนี้ และไม่ได้ระบุข้อความเพิ่มเติม";
+                }
+            }
 
             if (eventId && eventId !== 'TODAY_EVENTS') {
                 const ev = events.find(e => e.id === eventId);
@@ -1475,6 +1740,9 @@
             const taskData = {
                 subject, message, eventId, scheduleMode, scheduleDate, scheduleTime, 
                 scheduleHours, scheduleMins, recipients,
+                targetScheduleTimeMs, // 🌟 Save Target Time to know if it's sent
+                isCancelled,          // 🌟 Save flag
+                cancelReason,         // 🌟 Save Reason
                 createdAt: new Date().toISOString()
             };
 
@@ -1497,26 +1765,30 @@
             btn.classList.add('opacity-50');
             icon.setAttribute('data-lucide', 'loader-2');
             icon.classList.add('animate-spin');
-            text.innerText = 'กำลังบันทึกและซิงก์ข้อมูล...';
+            text.innerText = 'กำลังบันทึกข้อมูล...';
             if(window.lucide) window.lucide.createIcons();
 
             try {
                 // 1. Save to Firebase
                 await setDoc(doc(db, 'email_tasks', taskId), taskData);
 
-                // 2. Send to GAS
-                try {
-                    await fetch(GAS_EMAIL_API_URL, {
-                        method: 'POST',
-                        mode: 'no-cors',
-                        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                        body: JSON.stringify(gasPayload)
-                    });
-                } catch(e) {
-                    console.log("GAS Request sent (CORS block ignored)", e);
+                // 2. Send to GAS ONLY if not cancelled
+                if (!isCancelled) {
+                    try {
+                        await fetch(GAS_EMAIL_API_URL, {
+                            method: 'POST',
+                            mode: 'no-cors',
+                            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                            body: JSON.stringify(gasPayload)
+                        });
+                    } catch(e) {
+                        console.log("GAS Request sent (CORS block ignored)", e);
+                    }
+                    showToast(`บันทึกและจัดคิวส่งสำเร็จ!`);
+                } else {
+                    showToast(`บันทึกลงประวัติ: ${cancelReason}`);
                 }
                 
-                showToast(`บันทึกและจัดคิวสำเร็จ!`);
                 window.closeEmailTaskForm();
             } catch (error) {
                 console.error(error);
@@ -1532,7 +1804,7 @@
         };
 
         window.deleteEmailTask = async (taskId) => {
-            if(!confirm("ยืนยันการลบรายการคิวอีเมลนี้?")) return;
+            if(!confirm("ยืนยันการลบคิว/ประวัติอีเมลนี้?")) return;
             
             try {
                 await deleteDoc(doc(db, 'email_tasks', taskId));
@@ -1545,11 +1817,40 @@
                     });
                 } catch(e) {}
                 
-                showToast("ลบคิวอีเมลสำเร็จ");
+                showToast("ลบข้อมูลสำเร็จ");
             } catch(e) {
                 showToast("ลบไม่สำเร็จ: " + e.message, true);
             }
         };
+
+        // --- 🌟 Global Interval for Real-time Countdown & History Check 🌟 ---
+        setInterval(() => {
+            let needsRender = false;
+            document.querySelectorAll('.task-countdown').forEach(el => {
+                const target = parseInt(el.getAttribute('data-target'));
+                const now = Date.now();
+                if (now >= target) {
+                    // Time reached, needs re-render to move to history
+                    needsRender = true;
+                } else {
+                    const diff = target - now;
+                    const d = Math.floor(diff / 86400000);
+                    const h = Math.floor((diff % 86400000) / 3600000);
+                    const m = Math.floor((diff % 3600000) / 60000);
+                    const s = Math.floor((diff % 60000) / 1000);
+                    
+                    let timeStr = "";
+                    if(d > 0) timeStr += `${d} วัน `;
+                    if(h > 0 || d > 0) timeStr += `${h} ชม. `;
+                    timeStr += `${m} นาที ${s} วินาที`;
+                    
+                    el.innerHTML = `<i data-lucide="timer" class="w-3 h-3"></i> ⏳ จะส่งในอีก ${timeStr}`;
+                }
+            });
+            if (needsRender && typeof window.renderEmailTasks === 'function') {
+                window.renderEmailTasks();
+            }
+        }, 1000);
 
         // --- Zoom Control Logic ---
         window.currentZoom = 90;
@@ -1770,7 +2071,7 @@
                 eventSnippet.classList.remove('hidden');
                 eventCardContainer.className = ""; 
                 eventCardContainer.innerHTML = todayEvs.map(linkedEv => `
-                    <div onclick="closeAnnouncement(); openEventView('${linkedEv.id}');" class="bg-white border border-slate-200 rounded-xl p-3 shadow-sm cursor-pointer hover:border-indigo-300 transition-all mb-2 last:mb-0">
+                    <div onclick="closeAnnouncement(); window.openEventView('${linkedEv.id}');" class="bg-white border border-slate-200 rounded-xl p-3 shadow-sm cursor-pointer hover:border-indigo-300 transition-all mb-2 last:mb-0">
                         <div class="flex flex-col">
                             <div class="flex justify-between items-start mb-1">
                                 <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-slate-100 text-slate-600 shadow-sm whitespace-nowrap">${linkedEv.time} น.</span>
@@ -1786,7 +2087,7 @@
                     eventSnippet.classList.remove('hidden');
                    eventCardContainer.className = "";
                     eventCardContainer.innerHTML = `
-                        <div onclick="closeAnnouncement(); openEventView('${linkedEv.id}');" class="bg-white border border-slate-200 rounded-xl p-3 shadow-sm cursor-pointer hover:border-indigo-300 transition-all">
+                        <div onclick="closeAnnouncement(); window.openEventView('${linkedEv.id}');" class="bg-white border border-slate-200 rounded-xl p-3 shadow-sm cursor-pointer hover:border-indigo-300 transition-all">
                             <div class="flex flex-col">
                                 <div class="flex justify-between items-start mb-1">
                                     <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-slate-100 text-slate-600 shadow-sm whitespace-nowrap">${linkedEv.time} น.</span>
@@ -1886,8 +2187,8 @@
 
             const adminActions = (isAdmin && showAdminOpts) ? `
                 <div class="flex justify-end gap-2 mt-3 pt-2" style="border-top: 1px solid ${hex}30;">
-                    <button onclick="event.stopPropagation(); handleEditEvent('${e.id}')" class="px-2.5 py-1 bg-white text-indigo-600 rounded text-[9px] font-bold flex items-center gap-1 hover:bg-indigo-50 border border-indigo-100 transition-all shadow-sm"><i data-lucide="edit-3" class="w-3 h-3"></i> แก้ไข</button>
-                    <button onclick="event.stopPropagation(); handleDeleteEvent('${e.id}')" class="px-2.5 py-1 bg-white text-rose-600 rounded text-[9px] font-bold flex items-center gap-1 hover:bg-rose-50 border border-rose-100 transition-all shadow-sm"><i data-lucide="trash-2" class="w-3 h-3"></i> ลบ</button>
+                    <button onclick="event.stopPropagation(); window.handleEditEvent('${e.id}')" class="px-2.5 py-1 bg-white text-indigo-600 rounded text-[9px] font-bold flex items-center gap-1 hover:bg-indigo-50 border border-indigo-100 transition-all shadow-sm"><i data-lucide="edit-3" class="w-3 h-3"></i> แก้ไข</button>
+                    <button onclick="event.stopPropagation(); window.handleDeleteEvent('${e.id}')" class="px-2.5 py-1 bg-white text-rose-600 rounded text-[9px] font-bold flex items-center gap-1 hover:bg-rose-50 border border-rose-100 transition-all shadow-sm"><i data-lucide="trash-2" class="w-3 h-3"></i> ลบ</button>
                 </div>
             ` : '';
 
@@ -1914,7 +2215,7 @@
             }
 
             return `
-                <div onclick="openEventView('${e.id}')" class="event-card-clickable p-3.5 rounded-xl border relative transition-all shadow-sm" style="background-color: ${hex}10; border-color: ${hex}30;">
+                <div onclick="window.openEventView('${e.id}')" class="event-card-clickable p-3.5 rounded-xl border relative transition-all shadow-sm" style="background-color: ${hex}10; border-color: ${hex}30;">
                     <div class="flex flex-col mb-1.5">
                         <div class="flex justify-between items-center mb-1.5">
                             <div class="flex items-center">
@@ -2049,7 +2350,7 @@
                 const textColor = isToday ? 'text-black font-black' : 'text-slate-700';
 
                 grid += `
-                    <button onclick="openDayDetails('${dayStr}')" 
+                    <button onclick="window.openDayDetails('${dayStr}')" 
                             style="${borderInlineStyle}"
                             class="calendar-day-btn relative aspect-square flex flex-col items-center justify-center rounded-xl transition-all 
                             ${ringClass} ${textColor} hover:brightness-95 active:scale-90 shadow-sm
@@ -2097,8 +2398,8 @@
                         <td class="px-4 py-3 text-center text-[11px] text-slate-500 leading-tight">${timeStrDisplay} น.</td>
                         <td class="px-4 py-3 text-center">
                             <div class="flex justify-center gap-1">
-                                <button onclick="handleEditEvent('${e.id}')" class="p-1.5 text-indigo-500 hover:bg-indigo-50 rounded-md transition-colors"><i data-lucide="edit-3" class="w-4 h-4"></i></button>
-                                <button onclick="handleDeleteEvent('${e.id}')" class="p-1.5 text-red-400 hover:bg-red-50 rounded-md transition-colors"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                                <button onclick="window.handleEditEvent('${e.id}')" class="p-1.5 text-indigo-500 hover:bg-indigo-50 rounded-md transition-colors"><i data-lucide="edit-3" class="w-4 h-4"></i></button>
+                                <button onclick="window.handleDeleteEvent('${e.id}')" class="p-1.5 text-red-400 hover:bg-red-50 rounded-md transition-colors"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
                             </div>
                         </td>
                     </tr>
@@ -2271,7 +2572,7 @@
                         <option value="locked" ${data.status === 'locked' ? 'selected' : ''}>ล็อกไว้</option>
                     </select>
                 </div>
-                <div class="col-span-1 flex items-center justify-center"><button type="button" onclick="this.parentElement.parentElement.remove(); updateScrollLock();" class="text-red-400 hover:text-red-600 transition-colors"><i data-lucide="minus-circle" class="w-4 h-4"></i></button></div>
+                <div class="col-span-1 flex items-center justify-center"><button type="button" onclick="this.parentElement.parentElement.remove(); window.updateScrollLock();" class="text-red-400 hover:text-red-600 transition-colors"><i data-lucide="minus-circle" class="w-4 h-4"></i></button></div>
             `;
             
             row.addEventListener('dragstart', () => {
@@ -2335,7 +2636,7 @@
             if (!e) return;
             
             if(document.getElementById('details-modal').classList.contains('hidden')) {
-                openDayDetails(e.date);
+                window.openDayDetails(e.date);
             } else {
                 selectedDate = e.date;
             }
@@ -2361,7 +2662,7 @@
             const container = document.getElementById('links-form-container');
             if(container) {
                 container.innerHTML = '';
-                (e.links || []).sort((a,b) => (parseInt(a.order)||0) - (parseInt(b.order)||0)).forEach(l => addLinkFormRow(l));
+                (e.links || []).sort((a,b) => (parseInt(a.order)||0) - (parseInt(b.order)||0)).forEach(l => window.addLinkFormRow(l));
             }
 
             const formContainer = document.getElementById('admin-form-container');
@@ -2396,7 +2697,7 @@
             const evDate = document.getElementById('ev-date');
             if (evDate && selectedDate) evDate.value = selectedDate;
 
-            selectColor('#818cf8', false);
+            window.selectColor('#818cf8', false);
 
             const linksContainer = document.getElementById('links-form-container');
             if(linksContainer) linksContainer.innerHTML = '';
